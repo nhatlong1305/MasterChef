@@ -24,7 +24,7 @@ public class Player : MonoBehaviour,IKitchenObjectParent
     {
         public BaseCounter selectCounter;
     }
-    [SerializeField] private float moveSpeed = 5f;
+    [SerializeField] private float moveSpeed = 3f;
     [SerializeField] private GameInput gameInput;
     [SerializeField] private LayerMask countersLayerMask;
     [SerializeField] private Transform kitchenObjectHoldPoint;
@@ -50,6 +50,15 @@ public class Player : MonoBehaviour,IKitchenObjectParent
     private void Start()
     {
         gameInput.OnInteractAction += GameInput_OnInteracAction;
+        gameInput.OnInteractAlternateAction += GameInput_OnInteracAlternateAction;
+    }
+    private void GameInput_OnInteracAlternateAction(object sender, System.EventArgs e)
+    {
+        if (selectedCounter != null)
+        {
+            selectedCounter.InteractAlternate(this);
+        }
+
     }
 
     private void GameInput_OnInteracAction(object sender, System.EventArgs e)
