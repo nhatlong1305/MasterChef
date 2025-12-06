@@ -817,7 +817,8 @@ PlayerSettings:
   webGLWebAssemblyBigInt: 0
   webGLCloseOnQuit: 0
   webWasm2023: 0
-  scriptingDefineSymbols: {}
+  scriptingDefineSymbols:
+    Standalone: ALLIN13DSHADER_URP
   additionalCompilerArguments: {}
   platformArchitecture: {}
   scriptingBackend:

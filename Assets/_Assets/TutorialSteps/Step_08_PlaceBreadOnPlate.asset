@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 19fed08f40488a54ca248c59c9e390b5, type: 3}
+  m_Name: Step_08_PlaceBreadOnPlate
+  m_EditorClassIdentifier: 
+  title: "\u0110\u1EB7t Bread l\xEAn Plate"
+  description: "Nh\u1EA5n E \u0111\u1EC3 \u0111\u1EB7t Bread l\xEAn Plate."
+  icon: {fileID: 0}
+  conditionType: 7
+  targetCounterName: 
+  requireSpecificIngredient: 1
+  targetIngredient: {fileID: 11400000, guid: b37f98d5f4b29a44fa32ca8d17f27f07, type: 2}

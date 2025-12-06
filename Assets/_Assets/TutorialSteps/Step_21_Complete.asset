@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 19fed08f40488a54ca248c59c9e390b5, type: 3}
+  m_Name: Step_21_Complete
+  m_EditorClassIdentifier: 
+  title: "Giao m\xF3n \u0103n"
+  description: "\u0110i \u0111\u1EBFn DeliveryCounter v\xE0 nh\u1EA5n E \u0111\u1EC3
+    giao m\xF3n \u0103n."
+  icon: {fileID: 0}
+  conditionType: 2
+  targetCounterName: DeliveryCounter
+  requireSpecificIngredient: 0
+  targetIngredient: {fileID: 0}

@@ -1,4 +1,4 @@
-using TMPro;
+﻿using TMPro;
 using UnityEngine;
 
 public class GameOverUI : MonoBehaviour
@@ -7,31 +7,17 @@ public class GameOverUI : MonoBehaviour
 
     private void Start()
     {
-        KitchenGameManager.Instance.OnStateChanged += KitchenGameManager_OnStateChanged;
-        Hide();
+        gameObject.SetActive(false); 
+
+       
+        KitchenGameManager.Instance.OnGameOver += Instance_OnGameOver;
     }
 
-    private void KitchenGameManager_OnStateChanged(object sender, System.EventArgs e)
+    private void Instance_OnGameOver(object sender, System.EventArgs e)
     {
-        if (KitchenGameManager.Instance.IsGameOver())
-        {
-            Show();
-            recipesDeliveredText.text = DeliveryManager.Instance.GetSuccessfulRecipesAmount().ToString();
+        recipesDeliveredText.text =
+            DeliveryManager.Instance.GetSuccessfulRecipesAmount().ToString();
 
-        }
-        else
-        {
-            Hide();
-        }
-    }
-
-    
-    private void Show()
-    {
-        gameObject.SetActive(true);
-    }
-    private void Hide()
-    {
-        gameObject.SetActive(false);
+        gameObject.SetActive(true); 
     }
 }

@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 19fed08f40488a54ca248c59c9e390b5, type: 3}
+  m_Name: Step_20_PlaceTomatoSlice
+  m_EditorClassIdentifier: 
+  title: "Chu\u1EA9n b\u1ECB TomatoSlice"
+  description: "L\u1EA5y Tomato \u2192 C\u1EAFt \u2192 \u0110\u1EB7t l\xEAn Plate."
+  icon: {fileID: 0}
+  conditionType: 7
+  targetCounterName: 
+  requireSpecificIngredient: 1
+  targetIngredient: {fileID: 11400000, guid: 79488082aed264a4785d9fcfd4f53e6e, type: 2}
