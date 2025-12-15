@@ -22,18 +22,14 @@ public class PlateKitchenObject : KitchenObject
 
     public bool TryAddIngredient(KitchenObjectSO kitchenObjectSO)
     {
-        // 1) Không phải ingredient hợp lệ
         if (!validKitchenObjectSOList.Contains(kitchenObjectSO))
             return false;
 
-        // 2) Không trùng ingredient
         if (kitchenObjectSOList.Contains(kitchenObjectSO))
             return false;
 
-        // OK → Thêm
         kitchenObjectSOList.Add(kitchenObjectSO);
 
-        // Event thêm ingredient
         OnIngredientAdded?.Invoke(this, new OnIngredientAddedEventArgs
         {
             kitchenObjectSO = kitchenObjectSO

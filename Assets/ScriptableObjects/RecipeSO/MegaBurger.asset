@@ -19,3 +19,4 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 7123bdd2ee50eb240bea06553398b042, type: 2}
   - {fileID: 11400000, guid: 79488082aed264a4785d9fcfd4f53e6e, type: 2}
   recipeName: MegaBurger
+  recipeDuration: 50

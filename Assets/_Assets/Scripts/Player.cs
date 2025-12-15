@@ -175,7 +175,6 @@ public class Player : MonoBehaviour, IKitchenObjectParent
             }
             else
             {
-                // Chỉ Z
                 Vector3 moveDirZ = new Vector3(0, 0, moveDir.z).normalized;
                 bool canMoveZ = moveDir.z != 0 && !Physics.CapsuleCast(
                     transform.position,
@@ -192,7 +191,6 @@ public class Player : MonoBehaviour, IKitchenObjectParent
                 }
                 else
                 {
-                    // Không di chuyển được hướng nào
                     canMove = false;
                 }
             }
@@ -205,7 +203,6 @@ public class Player : MonoBehaviour, IKitchenObjectParent
 
         isWalking = moveDir != Vector3.zero;
 
-        // Xoay mượt theo hướng di chuyển
         if (moveDir != Vector3.zero)
         {
             float rotateSpeed = 5f;
@@ -213,7 +210,6 @@ public class Player : MonoBehaviour, IKitchenObjectParent
         }
     }
 
-    // ========= PUBLIC API =========
     public bool IsWalking()
     {
         return isWalking;
@@ -244,7 +240,6 @@ public class Player : MonoBehaviour, IKitchenObjectParent
 
         if (kitchenObject != null)
         {
-            // Tutorial: đã nhặt đồ
             HasPickedIngredient = true;
 
             OnPickedSomething?.Invoke(this, EventArgs.Empty);
@@ -266,7 +261,6 @@ public class Player : MonoBehaviour, IKitchenObjectParent
         return kitchenObject != null;
     }
 
-    // (Optional) Reset flag khi cần chơi lại tutorial
     public void ResetTutorialFlags()
     {
         HasMoved = false;

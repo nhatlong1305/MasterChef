@@ -49,9 +49,9 @@ public class BaseCounter : MonoBehaviour, IKitchenObjectParent
         return kitchenObject != null;
     }
 
-    // ================================
+  
     //      Hỗ trợ Tutorial
-    // ================================
+  
 
     public bool HasPlateOnCounter()
     {

@@ -44,11 +44,13 @@ public class SoundManager : MonoBehaviour
         PlaySound(audioClipRefsSO.chop, cuttingCounter.transform.position);
     }
 
-    private void DeliveryManager_OnRecipeFailed(object sender, EventArgs e)
+    private void DeliveryManager_OnRecipeFailed(object sender, RecipeFailedEventArgs e)
     {
         DeliveryCounter deliveryCounter = DeliveryCounter.Instance;
         PlaySound(audioClipRefsSO.deliveryFail, deliveryCounter.transform.position);
     }
+
+
 
     private void DeliveryManager_OnRecipeSuccess(object sender, EventArgs e)
     {

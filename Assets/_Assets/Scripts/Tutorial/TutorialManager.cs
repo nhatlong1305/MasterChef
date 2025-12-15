@@ -25,6 +25,8 @@ public class TutorialManager : MonoBehaviour
     private bool isTutorialRunning = false;
     public bool IsTutorialRunning => isTutorialRunning;
 
+    private const string SKIP_KEY = "SkipTutorial";
+
     private void Awake()
     {
         Instance = this;
@@ -42,9 +44,27 @@ public class TutorialManager : MonoBehaviour
     {
         yield return null;
 
+        // ⭐ 1) Check restart tutorial skip BEFORE disabling UI
+        if (PlayerPrefs.GetInt(SKIP_KEY, 0) == 1)
+        {
+            PlayerPrefs.SetInt(SKIP_KEY, 0);
+            PlayerPrefs.Save();
+
+            // ẩn popup ngay lập tức
+            tutorialPopup.SetActive(false);
+
+            // bật lại UI gameplay (vì restart không dùng tutorial)
+            EnableGameplayUI();
+
+            FinishTutorial();  // countdown + gameplay start
+            yield break;
+        }
+
+        // ⭐ 2) Nếu KHÔNG skip → chạy tutorial như bình thường
         DisableGameplayUI();
         tutorialPopup.SetActive(true);
     }
+
 
     private void DisableGameplayUI()
     {
@@ -60,9 +80,7 @@ public class TutorialManager : MonoBehaviour
         GameObject.Find("GamePlayingBlockUI")?.SetActive(true);
     }
 
-    // ===========================
-    //     START – SKIP – END
-    // ===========================
+    // ====================== START / SKIP / END ======================
 
     public void StartTutorial()
     {
@@ -84,21 +102,19 @@ public class TutorialManager : MonoBehaviour
             t.target?.DisableOutline();
 
         currentStep = null;
-    
 
         EnableGameplayUI();
         OnTutorialCompleted?.Invoke();
 
+        // Bắt đầu countdown
         KitchenGameManager.Instance.StartCountdownAfterTutorial();
     }
 
-    // ===========================
-    //        STEP LOADING
-    // ===========================
+
+    // ====================== STEP HANDLING ======================
 
     private void LoadCurrentStep()
     {
-        // Always clean old listeners first
         player.GameInput.OnInteractAction -= OnInteractCorrectCounter;
         player.GameInput.OnInteractAction -= OnInteractDeliveryCounter;
 
@@ -110,7 +126,7 @@ public class TutorialManager : MonoBehaviour
 
         currentStep = steps[currentStepIndex];
 
-        // Cache target counter
+        // Find target counter
         GameObject obj = null;
         if (!string.IsNullOrEmpty(currentStep.targetCounterName))
             obj = GameObject.Find(currentStep.targetCounterName);
@@ -118,27 +134,17 @@ public class TutorialManager : MonoBehaviour
         cachedTargetCounter = obj ? obj.GetComponent<BaseCounter>() : null;
 
         OnStepChanged?.Invoke(this, currentStep);
-
         ApplyHighlight(currentStep);
 
-        // ⭐ FIX LỚN NHẤT: auto-assign interact event ngay khi load step ⭐
         if (currentStep.conditionType == TutorialConditionType.InteractAtCounter)
         {
-            // Nếu player đã nhìn đúng counter ngay lúc load step
             if (player.GetSelectedCounter() == cachedTargetCounter)
-            {
                 player.GameInput.OnInteractAction += OnInteractCorrectCounter;
-            }
 
-            // Special case: DeliveryCounter
             if (currentStep.targetCounterName == "DeliveryCounter")
-            {
                 player.GameInput.OnInteractAction += OnInteractDeliveryCounter;
-            }
         }
     }
-
-
 
     private void NextStep()
     {
@@ -146,9 +152,7 @@ public class TutorialManager : MonoBehaviour
         LoadCurrentStep();
     }
 
-    // ===========================
-    //        HIGHLIGHT
-    // ===========================
+    // ====================== HIGHLIGHT ======================
 
     private void ApplyHighlight(TutorialStepSO step)
     {
@@ -165,9 +169,7 @@ public class TutorialManager : MonoBehaviour
         }
     }
 
-    // ===========================
-    //         UPDATE LOOP
-    // ===========================
+    // ====================== UPDATE LOOP ======================
 
     private void Update()
     {
@@ -190,24 +192,18 @@ public class TutorialManager : MonoBehaviour
     {
         if (!cachedTargetCounter) return;
 
-        float dist = Vector3.Distance(
-            player.transform.position,
-            cachedTargetCounter.transform.position
-        );
+        float dist = Vector3.Distance(player.transform.position, cachedTargetCounter.transform.position);
 
         if (dist < 2f)
             NextStep();
     }
 
-    // ===========================
-    //     GAMEPLAY EVENTS
-    // ===========================
+    // ====================== GAMEPLAY EVENTS ======================
 
     private void RegisterGameplayEvents()
     {
         player.OnPickedSomething += Player_OnPickedSomething;
         player.OnSelectedCounterChanged += Player_OnSelectedCounterChanged;
-
         BaseCounter.OnAnyObjectPlaceHere += OnAnyObjectPlaced;
 
         foreach (var cut in FindObjectsByType<CuttingCounter>(FindObjectsSortMode.None))
@@ -238,26 +234,18 @@ public class TutorialManager : MonoBehaviour
     private void Player_OnSelectedCounterChanged(object sender, Player.OnSelectedCounterChangedEventArgs e)
     {
         if (!isTutorialRunning || currentStep == null) return;
+
         if (currentStep.conditionType != TutorialConditionType.InteractAtCounter) return;
 
-        // Remove old listeners first
         player.GameInput.OnInteractAction -= OnInteractCorrectCounter;
         player.GameInput.OnInteractAction -= OnInteractDeliveryCounter;
 
-        // If selecting correct counter
         if (e.selectCounter == cachedTargetCounter)
-        {
             player.GameInput.OnInteractAction += OnInteractCorrectCounter;
-        }
 
-        // If step is DeliveryCounter
         if (currentStep.targetCounterName == "DeliveryCounter")
-        {
             player.GameInput.OnInteractAction += OnInteractDeliveryCounter;
-        }
     }
-
-
 
     private void OnInteractCorrectCounter(object sender, EventArgs e)
     {
@@ -272,7 +260,6 @@ public class TutorialManager : MonoBehaviour
         player.GameInput.OnInteractAction -= OnInteractDeliveryCounter;
         NextStep();
     }
-
 
     private void OnAnyObjectPlaced(object sender, EventArgs e)
     {
@@ -303,7 +290,6 @@ public class TutorialManager : MonoBehaviour
     private void OnCutComplete(object sender, EventArgs e)
     {
         if (!isTutorialRunning || currentStep == null) return;
-
         if (currentStep.conditionType != TutorialConditionType.CutIngredient) return;
 
         if (currentStep.requireSpecificIngredient)

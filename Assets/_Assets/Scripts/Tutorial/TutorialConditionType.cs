@@ -9,6 +9,5 @@
     HasSpecificIngredient,
     PlaceIngredient,     
     CookIngredient,       
-    TakeIngredient,
-    DeliverDish
+    TakeIngredient
 }
