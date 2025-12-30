@@ -12,9 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 19fed08f40488a54ca248c59c9e390b5, type: 3}
   m_Name: Step_17_CutCheese
   m_EditorClassIdentifier: 
-  title: "C\u1EAFt Cheese"
-  description: "\u0110em Cheese t\u1EDBi Cutting Counter v\xE0 nh\u1EA5n F \u0111\u1EC3
-    c\u1EAFt."
+  title: Cheese Cut
+  description: Bring the cheese to the cutting counter and press F to cut it.
   conditionType: 4
   targetCounterName: CuttingCounter
   requireSpecificIngredient: 1

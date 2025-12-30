@@ -12,9 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 19fed08f40488a54ca248c59c9e390b5, type: 3}
   m_Name: Step_18_PlaceCheeseSlice
   m_EditorClassIdentifier: 
-  title: "\u0110\u1EB7t CheeseSlices l\xEAn Plate"
-  description: "\u0110\u1EB7t CheeseSlices l\xEAn \u0111\u0129a."
-  icon: {fileID: 0}
+  title: Place the cheese slices on the plate.
+  description: Bring the cheese back to the plate and place it down.
   conditionType: 7
   targetCounterName: 
   requireSpecificIngredient: 1

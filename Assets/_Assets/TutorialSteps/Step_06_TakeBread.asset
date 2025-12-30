@@ -12,9 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 19fed08f40488a54ca248c59c9e390b5, type: 3}
   m_Name: Step_06_TakeBread
   m_EditorClassIdentifier: 
-  title: "L\u1EA5y Bread"
-  description: "Nh\u1EA5n E \u0111\u1EC3 l\u1EA5y Bread."
-  icon: {fileID: 0}
+  title: Get Bread
+  description: Press E to get Bread.
   conditionType: 2
   targetCounterName: BreadCounter
   requireSpecificIngredient: 0

@@ -16,7 +16,7 @@ public class MainMenuUI : MonoBehaviour
     {
         AddEffects(playButton, () =>
         {
-            Loader.Load(Loader.Scene.KitChen);
+            Loader.Load(Loader.Scene.Kitchen);
         });
 
         AddEffects(quitButton, () =>
@@ -29,11 +29,9 @@ public class MainMenuUI : MonoBehaviour
     {
         EventTriggerListener listener = btn.gameObject.AddComponent<EventTriggerListener>();
 
-        // Hover
         listener.onEnter = () => StartCoroutine(ScaleTo(btn.transform, hoverScale, 0.12f));
         listener.onExit = () => StartCoroutine(ScaleTo(btn.transform, normalScale, 0.12f));
 
-        // Click
         listener.onClick = () =>
         {
             StartCoroutine(ButtonClickAnimation(btn.transform, action));
@@ -42,10 +40,9 @@ public class MainMenuUI : MonoBehaviour
 
     private IEnumerator ButtonClickAnimation(Transform t, System.Action action)
     {
-        // Nhún xu?ng
         yield return StartCoroutine(ScaleTo(t, clickScale, 0.08f));
 
-        // N?y l?i
+      
         yield return StartCoroutine(ScaleTo(t, normalScale, 0.12f));
 
         action?.Invoke();

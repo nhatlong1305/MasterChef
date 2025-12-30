@@ -3,6 +3,7 @@ using System;
 using UnityEngine.UI;
 using TMPro;
 using System.Collections;
+using System.Collections.Generic;
 
 public class DeliveryManagerUI : MonoBehaviour
 {
@@ -22,26 +23,45 @@ public class DeliveryManagerUI : MonoBehaviour
 
         KitchenGameManager.Instance.OnStateChanged += KitchenGameManager_OnStateChanged;
 
-
         PlateKitchenObject.OnAnyIngredientAdded += Plate_OnAnyIngredientAdded;
 
-        TutorialManager.Instance.OnStepChanged += OnTutorialStep;
-        TutorialManager.Instance.OnTutorialCompleted += OnTutorialCompleted;
+        if (TutorialManager.Instance != null)
+        {
+            TutorialManager.Instance.OnStepChanged += OnTutorialStep;
+            TutorialManager.Instance.OnTutorialCompleted += OnTutorialCompleted;
+        }
 
         UpdateVisual();
         Hide();
     }
 
+    private void OnDestroy()
+    {
+        // tránh leak event
+        if (DeliveryManager.Instance != null)
+        {
+            DeliveryManager.Instance.OnRecipeSpawned -= DeliveryManager_OnRecipeSpawned;
+            DeliveryManager.Instance.OnRecipeFailed -= DeliveryManager_OnRecipeFailed;
+            DeliveryManager.Instance.OnRecipeCompleted -= DeliveryManager_OnRecipeCompleted;
+        }
+
+        if (KitchenGameManager.Instance != null)
+        {
+            KitchenGameManager.Instance.OnStateChanged -= KitchenGameManager_OnStateChanged;
+        }
+
+        PlateKitchenObject.OnAnyIngredientAdded -= Plate_OnAnyIngredientAdded;
+    }
+
+
     private void KitchenGameManager_OnStateChanged(object sender, EventArgs e)
     {
-        // Khi đang countdown → ẩn UI
         if (KitchenGameManager.Instance.IsCountdownToStartActive())
         {
             Hide();
             return;
         }
 
-        // Khi bắt đầu chơi → hiện UI
         if (KitchenGameManager.Instance.IsGamePlaying())
         {
             Show();
@@ -49,7 +69,6 @@ public class DeliveryManagerUI : MonoBehaviour
             return;
         }
 
-        // Khi game over → ẩn UI
         if (KitchenGameManager.Instance.IsGameOver())
         {
             Hide();
@@ -59,39 +78,34 @@ public class DeliveryManagerUI : MonoBehaviour
 
 
 
-    // ========================================
-    // EVENTS
-    // ========================================
     private void DeliveryManager_OnRecipeSpawned(object sender, EventArgs e)
     {
         UpdateVisual();
     }
 
+    private void DeliveryManager_OnRecipeCompleted(object sender, EventArgs e)
+    {
+        if (e is RecipeDeliveredEventArgs args)
+        {
+            RemoveRecipeUI(args.recipeId);
+        }
+    }
 
     private void DeliveryManager_OnRecipeFailed(object sender, RecipeFailedEventArgs e)
     {
         if (!gameObject.activeInHierarchy) return;
-        if (!string.IsNullOrEmpty(e.recipeId))
-        {
-            ShowFailedAnimation(e.recipeId);
-            StartCoroutine(RefreshUIAfterDelay(e.recipeId));
-        }
-       
+        if (string.IsNullOrEmpty(e.recipeId)) return;
+
+        ShowFailedAnimation(e.recipeId);
+        StartCoroutine(RemoveRecipeAfterDelay(e.recipeId));
     }
 
-
-    private IEnumerator RefreshUIAfterDelay(string recipeId)
+    private IEnumerator RemoveRecipeAfterDelay(string recipeId)
     {
-        yield return new WaitForSeconds(0.7f); 
+        yield return new WaitForSeconds(0.7f);
         RemoveRecipeUI(recipeId);
     }
 
-
-    private void DeliveryManager_OnRecipeCompleted(object sender, EventArgs e)
-    {
-        if (e is RecipeDeliveredEventArgs args)
-            RemoveRecipeUI(args.recipeId);
-    }
 
 
     private void Plate_OnAnyIngredientAdded(object sender, PlateKitchenObject.OnIngredientAddedEventArgs e)
@@ -99,7 +113,7 @@ public class DeliveryManagerUI : MonoBehaviour
         PlateKitchenObject plate = sender as PlateKitchenObject;
         if (plate == null) return;
 
-        var ingredients = plate.GetKitchenObjectSOList();
+        List<KitchenObjectSO> ingredients = plate.GetKitchenObjectSOList();
         var match = DeliveryManager.Instance.GetBestMatchingRecipe(ingredients);
 
         if (match != null)
@@ -108,42 +122,10 @@ public class DeliveryManagerUI : MonoBehaviour
             ClearHighlight();
     }
 
-
-
-    // FAIL ANIMATION
-    public void ShowFailedAnimation(string recipeId)
-    {
-        // UI cha đang bị ẩn → không chạy animation
-        if (!gameObject.activeInHierarchy) return;
-
-        foreach (Transform child in container)
-        {
-            if (child == recipeTemplate) continue;
-            if (!child.gameObject.activeInHierarchy) continue;
-
-            var ui = child.GetComponent<DeliveryManagerSimpleUI>();
-            if (ui == null) continue;
-
-            if (ui.RecipeId == recipeId)
-            {
-                var item = child.GetComponent<RecipeItemUI>();
-
-                if (item != null && item.gameObject.activeInHierarchy)
-                {
-                    item.PlayFailedEffect();
-                }
-
-                break;
-            }
-        }
-    }
-
-
-
-    // UI UPDATE
     private void UpdateVisual()
     {
-        if (TutorialManager.Instance.IsTutorialRunning)
+        if (TutorialManager.Instance != null &&
+            TutorialManager.Instance.IsTutorialRunning)
         {
             Hide();
             return;
@@ -160,11 +142,14 @@ public class DeliveryManagerUI : MonoBehaviour
             Transform obj = Instantiate(recipeTemplate, container);
             obj.gameObject.SetActive(true);
 
-            obj.GetComponent<DeliveryManagerSimpleUI>().SetRecipeInstance(inst);
+            var simpleUI = obj.GetComponent<DeliveryManagerSimpleUI>();
+            simpleUI.SetRecipeInstance(inst);
+
 
             var itemUI = obj.gameObject.AddComponent<RecipeItemUI>();
             Image bg = obj.Find("Background").GetComponent<Image>();
-            TextMeshProUGUI nameText = obj.Find("Background/RecipesNameText").GetComponent<TextMeshProUGUI>();
+            TextMeshProUGUI nameText =
+                obj.Find("Background/RecipesNameText").GetComponent<TextMeshProUGUI>();
 
             itemUI.Init(bg, nameText);
             itemUI.SetRecipe(inst.recipe);
@@ -172,7 +157,6 @@ public class DeliveryManagerUI : MonoBehaviour
     }
 
 
-    // REMOVE UI
     private void RemoveRecipeUI(string recipeId)
     {
         foreach (Transform child in container)
@@ -180,7 +164,6 @@ public class DeliveryManagerUI : MonoBehaviour
             if (child == recipeTemplate) continue;
 
             var ui = child.GetComponent<DeliveryManagerSimpleUI>();
-
             if (ui != null && ui.RecipeId == recipeId)
             {
                 Destroy(child.gameObject);
@@ -190,47 +173,58 @@ public class DeliveryManagerUI : MonoBehaviour
     }
 
 
-    // HIGHLIGHT
-    public void HighlightRecipe(string recipeId)
+    private void ShowFailedAnimation(string recipeId)
     {
-        if (!gameObject.activeInHierarchy) return;
-
-        for (int i = container.childCount - 1; i >= 0; i--)
+        foreach (Transform child in container)
         {
-            Transform child = container.GetChild(i);
-
-            if (child == null) continue;
             if (child == recipeTemplate) continue;
             if (!child.gameObject.activeInHierarchy) continue;
 
             var ui = child.GetComponent<DeliveryManagerSimpleUI>();
-            if (ui == null) continue;
-
-            ui.SetHighlighted(ui.RecipeId == recipeId);
+            if (ui != null && ui.RecipeId == recipeId)
+            {
+                var item = child.GetComponent<RecipeItemUI>();
+                if (item != null)
+                {
+                    item.PlayFailedEffect();
+                }
+                break;
+            }
         }
     }
 
 
-    public void ClearHighlight()
+
+    private void HighlightRecipe(string recipeId)
     {
-        if (!gameObject.activeInHierarchy) return;
-
-        for (int i = container.childCount - 1; i >= 0; i--)
+        foreach (Transform child in container)
         {
-            Transform child = container.GetChild(i);
-
-            if (child == null) continue;
             if (child == recipeTemplate) continue;
 
             var ui = child.GetComponent<DeliveryManagerSimpleUI>();
-            if (ui == null) continue;
+            if (ui != null)
+            {
+                ui.SetHighlighted(ui.RecipeId == recipeId);
+            }
+        }
+    }
 
-            ui.SetHighlighted(false);
+    private void ClearHighlight()
+    {
+        foreach (Transform child in container)
+        {
+            if (child == recipeTemplate) continue;
+
+            var ui = child.GetComponent<DeliveryManagerSimpleUI>();
+            if (ui != null)
+            {
+                ui.SetHighlighted(false);
+            }
         }
     }
 
 
-    // TUTORIAL
+
     private void OnTutorialStep(object sender, TutorialStepSO step)
     {
         Hide();
@@ -241,8 +235,6 @@ public class DeliveryManagerUI : MonoBehaviour
         Show();
         UpdateVisual();
     }
-
-
 
     private void Show() => gameObject.SetActive(true);
     private void Hide() => gameObject.SetActive(false);

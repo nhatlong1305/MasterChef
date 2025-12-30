@@ -12,9 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 19fed08f40488a54ca248c59c9e390b5, type: 3}
   m_Name: Step_01_MoveToPlateCounter
   m_EditorClassIdentifier: 
-  title: "\u0110i \u0111\u1EBFn qu\u1EA7y Plate"
-  description: "Di chuy\u1EC3n \u0111\u1EBFn qu\u1EA7y Plate."
-  icon: {fileID: 21300000, guid: 3928afb5321bb3d489bbd4ac581b29a2, type: 3}
+  title: Go to the Plate counter.
+  description: Move to the Plate counter.
   conditionType: 1
   targetCounterName: PlateCounter
   requireSpecificIngredient: 0

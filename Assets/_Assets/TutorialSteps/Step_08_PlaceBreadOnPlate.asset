@@ -12,9 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 19fed08f40488a54ca248c59c9e390b5, type: 3}
   m_Name: Step_08_PlaceBreadOnPlate
   m_EditorClassIdentifier: 
-  title: "\u0110\u1EB7t Bread l\xEAn Plate"
-  description: "Nh\u1EA5n E \u0111\u1EC3 \u0111\u1EB7t Bread l\xEAn Plate."
-  icon: {fileID: 0}
+  title: Place the bread on the plate.
+  description: Press E to place the bread on the plate.
   conditionType: 7
   targetCounterName: 
   requireSpecificIngredient: 1

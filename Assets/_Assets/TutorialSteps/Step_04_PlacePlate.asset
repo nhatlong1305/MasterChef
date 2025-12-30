@@ -12,9 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 19fed08f40488a54ca248c59c9e390b5, type: 3}
   m_Name: Step_04_PlacePlate
   m_EditorClassIdentifier: 
-  title: "\u0110\u1EB7t Plate xu\u1ED1ng Counter"
-  description: "Nh\u1EA5n E \u0111\u1EC3 \u0111\u1EB7t Plate l\xEAn Counter tr\u1ED1ng."
-  icon: {fileID: 0}
+  title: Place the plate down on the counter.
+  description: Press E to place the plate on the empty counter.
   conditionType: 7
   targetCounterName: EmptyCounter
   requireSpecificIngredient: 0

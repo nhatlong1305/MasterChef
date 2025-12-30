@@ -12,9 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 19fed08f40488a54ca248c59c9e390b5, type: 3}
   m_Name: Step_07_MoveToPlateAgain
   m_EditorClassIdentifier: 
-  title: "Mang Bread t\u1EDBi Plate"
-  description: "Di chuy\u1EC3n \u0111\u1EBFn n\u01A1i \u0111\xE3 \u0111\u1EB7t Plate."
-  icon: {fileID: 0}
+  title: Bring Bread to Plate
+  description: Move to where the Plate is placed.
   conditionType: 1
   targetCounterName: EmptyCounter
   requireSpecificIngredient: 0

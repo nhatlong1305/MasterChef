@@ -9,9 +9,9 @@ public class KitchenGameManager : MonoBehaviour
     public event EventHandler OnStateChanged;
     public event EventHandler OnGameOver;
 
-    private enum State
+    public enum State
     {
-        WaitingToStart,      
+        WaitingToStart,
         CountdownToStart,
         GamePlaying,
         GameOver,
@@ -19,64 +19,109 @@ public class KitchenGameManager : MonoBehaviour
 
     private State state;
 
-    private float countdownToStartTimer = 3f;
-    private float countdownToStartTimerMax = 3f;
+    [Header("Countdown")]
+    [SerializeField] private float countdownToStartTimerMax = 3f;
+    private float countdownToStartTimer;
 
+    [Header("Game Playing")]
+    [SerializeField] private float gamePlayingTimerMax = 120f;
     private float gamePlayingTimer;
-    [SerializeField] private float gamePlayingTimerMax = 5f;
 
     private void Awake()
     {
+        if (Instance != null)
+        {
+            Destroy(gameObject);
+            return;
+        }
+
         Instance = this;
         state = State.WaitingToStart;
     }
-
 
     private void Update()
     {
         switch (state)
         {
             case State.CountdownToStart:
-                countdownToStartTimer -= Time.deltaTime;
-                if (countdownToStartTimer < 0f)
-                {
-                    state = State.GamePlaying;
-
-                    gamePlayingTimer = gamePlayingTimerMax;
-
-                    OnStateChanged?.Invoke(this, EventArgs.Empty);
-                    OnGamePlayingStarted?.Invoke(this, EventArgs.Empty);
-                }
+                HandleCountdown();
                 break;
 
             case State.GamePlaying:
-                gamePlayingTimer -= Time.deltaTime;
-                if (gamePlayingTimer < 0f)
-                {
-                    state = State.GameOver;
-                    OnStateChanged?.Invoke(this, EventArgs.Empty);
-                    OnGameOver?.Invoke(this, EventArgs.Empty);
-                }
+                HandleGamePlaying();
+                break;
+
+            case State.GameOver:
+              
                 break;
         }
     }
 
 
+    private void HandleCountdown()
+    {
+        countdownToStartTimer -= Time.deltaTime;
+
+        if (countdownToStartTimer <= 0f)
+        {
+            SetState(State.GamePlaying);
+            OnGamePlayingStarted?.Invoke(this, EventArgs.Empty);
+        }
+    }
+
+    private void HandleGamePlaying()
+    {
+        gamePlayingTimer -= Time.deltaTime;
+
+        if (gamePlayingTimer <= 0f)
+        {
+            gamePlayingTimer = 0f;
+            SetState(State.GameOver);
+            OnGameOver?.Invoke(this, EventArgs.Empty);
+        }
+    }
+
+
+    private void SetState(State newState)
+    {
+        state = newState;
+
+        switch (state)
+        {
+            case State.CountdownToStart:
+                countdownToStartTimer = countdownToStartTimerMax;
+                break;
+
+            case State.GamePlaying:
+                gamePlayingTimer = gamePlayingTimerMax;
+                break;
+
+            case State.GameOver:
+                break;
+        }
+
+        OnStateChanged?.Invoke(this, EventArgs.Empty);
+    }
+
+    
+    public void StartCountdownAfterTutorial()
+    {
+        if (state != State.WaitingToStart) return;
+        SetState(State.CountdownToStart);
+    }
+
     public bool IsCountdownToStartActive() => state == State.CountdownToStart;
     public bool IsGamePlaying() => state == State.GamePlaying;
     public bool IsGameOver() => state == State.GameOver;
 
-    public float GetCountdownToStartTime() => countdownToStartTimer;
+    public float GetCountdownToStartTime()
+    {
+        return Mathf.CeilToInt(Mathf.Max(countdownToStartTimer, 0f));
+    }
 
     public float GetGamePlayingTimerNormalized()
-        => 1 - (gamePlayingTimer / gamePlayingTimerMax);
-
-
-    public void StartCountdownAfterTutorial()
     {
-        state = State.CountdownToStart;
-        countdownToStartTimer = countdownToStartTimerMax;
-
-        OnStateChanged?.Invoke(this, EventArgs.Empty);
+        if (gamePlayingTimerMax <= 0f) return 0f;
+        return 1f - (gamePlayingTimer / gamePlayingTimerMax);
     }
 }

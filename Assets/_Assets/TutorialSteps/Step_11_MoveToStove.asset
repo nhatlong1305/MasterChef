@@ -12,9 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 19fed08f40488a54ca248c59c9e390b5, type: 3}
   m_Name: Step_11_MoveToStove
   m_EditorClassIdentifier: 
-  title: "Mang Meat t\u1EDBi b\u1EBFp"
-  description: "Di chuy\u1EC3n \u0111\u1EBFn Stove."
-  icon: {fileID: 0}
+  title: Bring Meat to Stove
+  description: Travel to Stove.
   conditionType: 1
   targetCounterName: StoveCounter
   requireSpecificIngredient: 0

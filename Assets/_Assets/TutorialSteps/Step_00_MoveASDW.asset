@@ -12,9 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 19fed08f40488a54ca248c59c9e390b5, type: 3}
   m_Name: Step_00_MoveASDW
   m_EditorClassIdentifier: 
-  title: "Di chuy\u1EC3n"
-  description: "S\u1EED d\u1EE5ng WASD \u0111\u1EC3 di chuy\u1EC3n nh\xE2n v\u1EADt."
-  icon: {fileID: 0}
+  title: Move
+  description: Use WASD to move your character.
   conditionType: 0
   targetCounterName: 
   requireSpecificIngredient: 0

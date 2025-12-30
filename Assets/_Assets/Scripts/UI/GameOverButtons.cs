@@ -4,12 +4,10 @@ using System.Collections;
 
 public class GameOverButtons : MonoBehaviour
 {
-    private bool isClickLocked = false; // chống spam
+    private bool isClickLocked = false; 
 
 
-    // ===========================
-    //       RESTART GAME
-    // ===========================
+
     public void RestartGame(Transform button)
     {
         if (isClickLocked) return;
@@ -24,9 +22,6 @@ public class GameOverButtons : MonoBehaviour
     }
 
 
-    // ===========================
-    //         QUIT GAME
-    // ===========================
     public void OnQuitButton(Transform button)
     {
         if (isClickLocked) return;
@@ -39,9 +34,6 @@ public class GameOverButtons : MonoBehaviour
     }
 
 
-    // ===========================
-    //     BUTTON ANIMATION
-    // ===========================
     private IEnumerator ButtonAnimation(Transform btn, System.Action callback)
     {
         Vector3 originalScale = btn.localScale;
@@ -49,7 +41,7 @@ public class GameOverButtons : MonoBehaviour
 
         float t = 0f;
 
-        // Scale lên
+    
         while (t < 1f)
         {
             t += Time.deltaTime * 10f;
@@ -57,7 +49,7 @@ public class GameOverButtons : MonoBehaviour
             yield return null;
         }
 
-        // Scale xuống
+       
         t = 0f;
         while (t < 1f)
         {
@@ -66,10 +58,9 @@ public class GameOverButtons : MonoBehaviour
             yield return null;
         }
 
-        // Giữ đúng kích thước gốc
         btn.localScale = originalScale;
 
-        // Gọi function thực sự
+      
         callback?.Invoke();
     }
 }

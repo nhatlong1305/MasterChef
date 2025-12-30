@@ -12,9 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 19fed08f40488a54ca248c59c9e390b5, type: 3}
   m_Name: Step_05_MoveToBreadCounter
   m_EditorClassIdentifier: 
-  title: "\u0110i \u0111\u1EBFn qu\u1EA7y Bread"
-  description: "Di chuy\u1EC3n \u0111\u1EBFn Bread Counter."
-  icon: {fileID: 0}
+  title: Go to the Bread counter.
+  description: Move to the Bread Counter.
   conditionType: 1
   targetCounterName: BreadCounter
   requireSpecificIngredient: 0

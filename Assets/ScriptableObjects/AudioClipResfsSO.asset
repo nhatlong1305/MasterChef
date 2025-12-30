@@ -42,3 +42,10 @@ MonoBehaviour:
   warning:
   - {fileID: 8300000, guid: b90d8099bdbf09a40ab1163556d5b5f4, type: 3}
   - {fileID: 8300000, guid: b59c98e0066c41f42b8100f5cb180f5b, type: 3}
+  uiHover:
+  - {fileID: 8300000, guid: 7c4c38895e542864b862defa89d46cdb, type: 3}
+  uiClick:
+  - {fileID: 8300000, guid: 9a6e629fdadcb114c9a4e7a528808ef7, type: 3}
+  menuMusic: {fileID: 8300000, guid: 52da57d55ed1a254ea8319eb33bf7fa7, type: 3}
+  gameMusic: {fileID: 8300000, guid: 7a05dfef8ff133848b3b25408c74021c, type: 3}
+  gameOverMusic: {fileID: 8300000, guid: 46c20ec283d03f941b5ebd79787f9458, type: 3}

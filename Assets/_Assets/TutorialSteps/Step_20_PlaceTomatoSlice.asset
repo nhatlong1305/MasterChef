@@ -12,9 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 19fed08f40488a54ca248c59c9e390b5, type: 3}
   m_Name: Step_20_PlaceTomatoSlice
   m_EditorClassIdentifier: 
-  title: "Chu\u1EA9n b\u1ECB TomatoSlice"
-  description: "L\u1EA5y Tomato \u2192 C\u1EAFt \u2192 \u0110\u1EB7t l\xEAn Plate."
-  icon: {fileID: 0}
+  title: Prepare Tomato Slice
+  description: "Take the tomato \u2192 Cut it \u2192 Place it on a plate."
   conditionType: 7
   targetCounterName: 
   requireSpecificIngredient: 1

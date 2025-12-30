@@ -12,9 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 19fed08f40488a54ca248c59c9e390b5, type: 3}
   m_Name: Step_13_TakeCookedMeat
   m_EditorClassIdentifier: 
-  title: "L\u1EA5y Meat \u0111\xE3 ch\xEDn"
-  description: "Nh\u1EA5n E \u0111\u1EC3 l\u1EA5y MeatCooked t\u1EEB b\u1EBFp."
-  icon: {fileID: 0}
+  title: Take the cooked meat.
+  description: Press E to retrieve the cooked meat from the stove.
   conditionType: 5
   targetCounterName: StoveCounter
   requireSpecificIngredient: 0

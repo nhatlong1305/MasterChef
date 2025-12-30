@@ -37,7 +37,7 @@ public class TutorialUI : MonoBehaviour
     {
         Show();
         titleText.text = "Game Start";
-        descriptionText.text = "Lưu ý: Nếu làm sai món hãy bỏ vào Sọt Rác.";
+        descriptionText.text = "Note: If you make a mistake, throw it in the trash.";
 
         yield return new WaitForSeconds(4f);
 

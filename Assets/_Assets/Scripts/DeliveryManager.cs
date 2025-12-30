@@ -17,7 +17,8 @@ public class RecipeFailedEventArgs : EventArgs
 public class DeliveryManager : MonoBehaviour
 {
     public event EventHandler OnRecipeSpawned;
-    public event EventHandler OnRecipeCompleted;
+    public event EventHandler<RecipeDeliveredEventArgs> OnRecipeCompleted;
+
     public event EventHandler OnRecipeSuccess;
     public event EventHandler<RecipeFailedEventArgs> OnRecipeFailed;
 
@@ -117,7 +118,7 @@ public class DeliveryManager : MonoBehaviour
 
     private IEnumerator RemoveRecipeAfterDelay(string recipeId)
     {
-        yield return new WaitForSeconds(0.7f); 
+        yield return new WaitForSeconds(0.7f);
 
         for (int i = 0; i < waitingRecipes.Count; i++)
         {
@@ -185,8 +186,7 @@ public class DeliveryManager : MonoBehaviour
     }
 
 
-    //      PUBLIC API
-    
+
 
     public List<RecipeInstance> GetWaitingRecipes() => waitingRecipes;
 

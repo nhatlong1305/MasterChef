@@ -12,9 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 19fed08f40488a54ca248c59c9e390b5, type: 3}
   m_Name: Step_15_MoveToCheeseCounter
   m_EditorClassIdentifier: 
-  title: "\u0110i \u0111\u1EBFn qu\u1EA7y Cheese"
-  description: "Di chuy\u1EC3n \u0111\u1EBFn Cheese Counter."
-  icon: {fileID: 0}
+  title: Go to the Cheese counter.
+  description: Move to the Cheese Counter.
   conditionType: 1
   targetCounterName: CheeseCounter
   requireSpecificIngredient: 0

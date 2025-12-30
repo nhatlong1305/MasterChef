@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using UnityEngine;
 
 public class StoveCounter : BaseCounter, IHasProgress
@@ -7,7 +6,7 @@ public class StoveCounter : BaseCounter, IHasProgress
     public event EventHandler<IHasProgress.OnProgressChangedEventArgs> OnProgressChanged;
     public event EventHandler<OnStateChangedEventArgs> OnStateChanged;
 
-    // 🔥 EVENT MỚI THÊM CHO TUTORIAL
+    // 🔥 Event cho Tutorial
     public event EventHandler OnCooked;
 
     public class OnStateChangedEventArgs : EventArgs
@@ -26,176 +25,202 @@ public class StoveCounter : BaseCounter, IHasProgress
     [SerializeField] private FryingRecipeSO[] fryingRecipeSOArray;
     [SerializeField] private BurningRecipeSO[] burningRecipeSOArray;
 
+    // 🔊 AUDIO LOOP STOVE
+    [SerializeField] private AudioSource stoveAudioSource;
+
     private State state;
     private float fryingTimer;
-    private float buringTimer;
+    private float burningTimer;
+
     private FryingRecipeSO fryingRecipeSO;
     private BurningRecipeSO burningRecipeSO;
+
+    // =====================================================
+    // =================== LIFECYCLE ======================
+    // =====================================================
 
     private void Start()
     {
         state = State.Idle;
+        StopStoveSound();
+
+        if (KitchenGameManager.Instance != null)
+            KitchenGameManager.Instance.OnGameOver += OnGameOver;
     }
+
+    private void OnDestroy()
+    {
+        if (KitchenGameManager.Instance != null)
+            KitchenGameManager.Instance.OnGameOver -= OnGameOver;
+    }
+
+    // =====================================================
+    // =================== UPDATE =========================
+    // =====================================================
 
     private void Update()
     {
-        if (HasKitchenObject())
+        // 🔥 GAME OVER → TẮT NGAY
+        if (KitchenGameManager.Instance != null &&
+            KitchenGameManager.Instance.IsGameOver())
         {
-            switch (state)
-            {
-                case State.Idle:
-                    break;
+            StopStoveSound();
+            return;
+        }
 
-                case State.Frying:
-                    fryingTimer += Time.deltaTime;
+        if (!HasKitchenObject()) return;
 
-                    OnProgressChanged?.Invoke(this, new IHasProgress.OnProgressChangedEventArgs
-                    {
-                        progressNormalized = fryingTimer / fryingRecipeSO.fryingTimeMax
-                    });
+        switch (state)
+        {
+            case State.Frying:
+                fryingTimer += Time.deltaTime;
 
-                    if (fryingTimer > fryingRecipeSO.fryingTimeMax)
-                    {
-                        // Xoá nguyên liệu sống
-                        GetKitchenObject().DestroySelf();
+                OnProgressChanged?.Invoke(this, new IHasProgress.OnProgressChangedEventArgs
+                {
+                    progressNormalized = fryingTimer / fryingRecipeSO.fryingTimeMax
+                });
 
-                        // Spawn nguyên liệu đã chín
-                        KitchenObject.SpawnKitchenObject(fryingRecipeSO.output, this);
+                if (fryingTimer >= fryingRecipeSO.fryingTimeMax)
+                {
+                    GetKitchenObject().DestroySelf();
+                    KitchenObject.SpawnKitchenObject(fryingRecipeSO.output, this);
 
-                        state = State.Fried;
-                        buringTimer = 0f;
-                        burningRecipeSO = GetBurningRecipeSOWithInput(GetKitchenObject().GetKitchenObjectSO());
+                    state = State.Fried;
+                    burningTimer = 0f;
+                    burningRecipeSO =
+                        GetBurningRecipeSOWithInput(GetKitchenObject().GetKitchenObjectSO());
 
-                        OnStateChanged?.Invoke(this, new OnStateChangedEventArgs
-                        {
-                            state = state
-                        });
+                    OnStateChanged?.Invoke(this, new OnStateChangedEventArgs { state = state });
+                    OnCooked?.Invoke(this, EventArgs.Empty);
 
-                        // 🔥 BÁO EVENT ĐÃ CHÍN — Tutorial dùng KIỂM TRA
-                        OnCooked?.Invoke(this, EventArgs.Empty);
-                    }
-                    break;
+                    StopStoveSound();
+                }
+                break;
 
-                case State.Fried:
-                    buringTimer += Time.deltaTime;
+            case State.Fried:
+                burningTimer += Time.deltaTime;
 
-                    OnProgressChanged?.Invoke(this, new IHasProgress.OnProgressChangedEventArgs
-                    {
-                        progressNormalized = buringTimer / burningRecipeSO.burningTimerMax
-                    });
+                OnProgressChanged?.Invoke(this, new IHasProgress.OnProgressChangedEventArgs
+                {
+                    progressNormalized = burningTimer / burningRecipeSO.burningTimerMax
+                });
 
-                    if (buringTimer > burningRecipeSO.burningTimerMax)
-                    {
-                        // bị cháy
-                        GetKitchenObject().DestroySelf();
-                        KitchenObject.SpawnKitchenObject(burningRecipeSO.output, this);
+                if (burningTimer >= burningRecipeSO.burningTimerMax)
+                {
+                    GetKitchenObject().DestroySelf();
+                    KitchenObject.SpawnKitchenObject(burningRecipeSO.output, this);
 
-                        state = State.Burned;
+                    state = State.Burned;
 
-                        OnStateChanged?.Invoke(this, new OnStateChangedEventArgs
-                        {
-                            state = state
-                        });
+                    OnStateChanged?.Invoke(this, new OnStateChangedEventArgs { state = state });
+                    OnProgressChanged?.Invoke(this,
+                        new IHasProgress.OnProgressChangedEventArgs { progressNormalized = 0f });
 
-                        OnProgressChanged?.Invoke(this, new IHasProgress.OnProgressChangedEventArgs
-                        {
-                            progressNormalized = 0f
-                        });
-                    }
-                    break;
-
-                case State.Burned:
-                    break;
-            }
+                    StopStoveSound();
+                }
+                break;
         }
     }
+
+    // =====================================================
+    // =================== INTERACT =======================
+    // =====================================================
 
     public override void Interact(Player player)
     {
         if (!HasKitchenObject())
         {
-            if (player.HasKitchenObject())
+            if (player.HasKitchenObject() &&
+                HasRecipeWithInput(player.GetKitchenObject().GetKitchenObjectSO()))
             {
-                if (HasRecipeWithInput(player.GetKitchenObject().GetKitchenObjectSO()))
-                {
-                    // đặt nguyên liệu vào bếp
-                    player.GetKitchenObject().SetKitchenObjectParent(this);
+                player.GetKitchenObject().SetKitchenObjectParent(this);
 
-                    fryingRecipeSO = GetFryingRecipeSOWithInput(GetKitchenObject().GetKitchenObjectSO());
-                    state = State.Frying;
-                    fryingTimer = 0f;
+                fryingRecipeSO =
+                    GetFryingRecipeSOWithInput(GetKitchenObject().GetKitchenObjectSO());
 
-                    OnStateChanged?.Invoke(this, new OnStateChangedEventArgs { state = state });
+                state = State.Frying;
+                fryingTimer = 0f;
 
-                    OnProgressChanged?.Invoke(this, new IHasProgress.OnProgressChangedEventArgs
-                    {
-                        progressNormalized = fryingTimer / fryingRecipeSO.fryingTimeMax
-                    });
-                }
-            }
-        }
-        else
-        {
-            if (player.HasKitchenObject())
-            {
-                if (player.GetKitchenObject().TryGetPlate(out PlateKitchenObject plateKitchenObject))
-                {
-                    if (plateKitchenObject.TryAddIngredient(GetKitchenObject().GetKitchenObjectSO()))
-                    {
-                        GetKitchenObject().DestroySelf();
-
-                        state = State.Idle;
-                        OnStateChanged?.Invoke(this, new OnStateChangedEventArgs { state = state });
-
-                        OnProgressChanged?.Invoke(this, new IHasProgress.OnProgressChangedEventArgs
-                        {
-                            progressNormalized = 0f
-                        });
-                    }
-                }
-            }
-            else
-            {
-                // player lấy đồ từ bếp
-                GetKitchenObject().SetKitchenObjectParent(player);
-
-                state = State.Idle;
                 OnStateChanged?.Invoke(this, new OnStateChangedEventArgs { state = state });
-
                 OnProgressChanged?.Invoke(this, new IHasProgress.OnProgressChangedEventArgs
                 {
                     progressNormalized = 0f
                 });
+
+                PlayStoveSound();
+            }
+        }
+        else
+        {
+            if (player.HasKitchenObject() &&
+                player.GetKitchenObject().TryGetPlate(out PlateKitchenObject plate))
+            {
+                if (plate.TryAddIngredient(GetKitchenObject().GetKitchenObjectSO()))
+                {
+                    GetKitchenObject().DestroySelf();
+                    ResetToIdle();
+                }
+            }
+            else if (!player.HasKitchenObject())
+            {
+                GetKitchenObject().SetKitchenObjectParent(player);
+                ResetToIdle();
             }
         }
     }
 
-    private bool HasRecipeWithInput(KitchenObjectSO inputKitchenObjectSO)
+    // =====================================================
+    // =================== AUDIO ==========================
+    // =====================================================
+
+    private void PlayStoveSound()
     {
-        return GetFryingRecipeSOWithInput(inputKitchenObjectSO) != null;
+        if (stoveAudioSource == null) return;
+        if (!stoveAudioSource.isPlaying)
+            stoveAudioSource.Play();
     }
 
-    private KitchenObjectSO GetOutputForInput(KitchenObjectSO inputKitchenObjectSO)
+    private void StopStoveSound()
     {
-        FryingRecipeSO recipe = GetFryingRecipeSOWithInput(inputKitchenObjectSO);
-        return recipe != null ? recipe.output : null;
+        if (stoveAudioSource == null) return;
+        if (stoveAudioSource.isPlaying)
+            stoveAudioSource.Stop();
     }
 
-    private FryingRecipeSO GetFryingRecipeSOWithInput(KitchenObjectSO inputKitchenObjectSO)
+    // =====================================================
+    // =================== HELPERS ========================
+    // =====================================================
+
+    private void ResetToIdle()
     {
-        foreach (FryingRecipeSO f in fryingRecipeSOArray)
-        {
-            if (f.input == inputKitchenObjectSO) return f;
-        }
+        state = State.Idle;
+        StopStoveSound();
+
+        OnStateChanged?.Invoke(this, new OnStateChangedEventArgs { state = state });
+        OnProgressChanged?.Invoke(this,
+            new IHasProgress.OnProgressChangedEventArgs { progressNormalized = 0f });
+    }
+
+    private bool HasRecipeWithInput(KitchenObjectSO input)
+        => GetFryingRecipeSOWithInput(input) != null;
+
+    private FryingRecipeSO GetFryingRecipeSOWithInput(KitchenObjectSO input)
+    {
+        foreach (var f in fryingRecipeSOArray)
+            if (f.input == input) return f;
         return null;
     }
 
-    private BurningRecipeSO GetBurningRecipeSOWithInput(KitchenObjectSO inputKitchenObjectSO)
+    private BurningRecipeSO GetBurningRecipeSOWithInput(KitchenObjectSO input)
     {
-        foreach (BurningRecipeSO b in burningRecipeSOArray)
-        {
-            if (b.input == inputKitchenObjectSO) return b;
-        }
+        foreach (var b in burningRecipeSOArray)
+            if (b.input == input) return b;
         return null;
     }
+
+    private void OnGameOver(object sender, System.EventArgs e)
+    {
+        StopStoveSound();
+    }
+
 }

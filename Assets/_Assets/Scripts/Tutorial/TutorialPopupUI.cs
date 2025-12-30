@@ -6,29 +6,69 @@ public class TutorialPopupUI : MonoBehaviour
     [SerializeField] private Button yesButton;
     [SerializeField] private Button noButton;
 
+    private CanvasGroup canvasGroup;
+
     private const string SKIP_KEY = "SkipTutorial";
+
+    private void Awake()
+    {
+      
+        canvasGroup = GetComponent<CanvasGroup>();
+        if (canvasGroup == null)
+        {
+            canvasGroup = gameObject.AddComponent<CanvasGroup>();
+        }
+    }
 
     private void Start()
     {
-        yesButton.onClick.AddListener(OnYesClicked);
-        noButton.onClick.AddListener(OnNoClicked);
+        yesButton.GetComponent<UIButtonEffect>()
+            .SetClickAction(OnYesClicked);
 
-        // Nếu restart → tự ẩn popup
+        noButton.GetComponent<UIButtonEffect>()
+            .SetClickAction(OnNoClicked);
+
         if (PlayerPrefs.GetInt(SKIP_KEY, 0) == 1)
         {
-            gameObject.SetActive(false);
+            Hide();
         }
+        else
+        {
+            Show();
+        }
+    }
+
+    private void Show()
+    {
+        gameObject.SetActive(true);
+
+        canvasGroup.alpha = 1f;
+        canvasGroup.interactable = true;
+        canvasGroup.blocksRaycasts = true;
+    }
+
+    private void Hide()
+    {
+
+        canvasGroup.alpha = 0f;
+        canvasGroup.interactable = false;
+        canvasGroup.blocksRaycasts = false;
+
+        gameObject.SetActive(false);
     }
 
     private void OnYesClicked()
     {
-        TutorialManager.Instance.SkipTutorial();
-        gameObject.SetActive(false);
+        TutorialManager.Instance.StartTutorial();
+        Hide();
     }
 
     private void OnNoClicked()
     {
-        TutorialManager.Instance.StartTutorial();
-        gameObject.SetActive(false);
+        PlayerPrefs.SetInt(SKIP_KEY, 1);
+        PlayerPrefs.Save();
+
+        TutorialManager.Instance.SkipTutorial();
+        Hide();
     }
 }

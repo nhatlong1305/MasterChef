@@ -12,9 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 19fed08f40488a54ca248c59c9e390b5, type: 3}
   m_Name: Step_16_TakeCheese
   m_EditorClassIdentifier: 
-  title: "L\u1EA5y Cheese"
-  description: "L\u1EA5y Cheese \u2192 C\u1EAFt \u2192 \u0110\u1EB7t l\xEAn Plate."
-  icon: {fileID: 0}
+  title: Get Cheese
+  description: "Take the cheese \u2192 Cut it \u2192 Place it on a plate."
   conditionType: 9
   targetCounterName: CheeseCounter
   requireSpecificIngredient: 1

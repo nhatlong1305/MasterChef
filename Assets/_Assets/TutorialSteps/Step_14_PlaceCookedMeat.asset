@@ -12,9 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 19fed08f40488a54ca248c59c9e390b5, type: 3}
   m_Name: Step_14_PlaceCookedMeat
   m_EditorClassIdentifier: 
-  title: "\u0110\u1EB7t MeatCooked l\xEAn Plate"
-  description: "Mang MeatCooked v\u1EC1 Plate v\xE0 \u0111\u1EB7t xu\u1ED1ng."
-  icon: {fileID: 0}
+  title: Place the cooked meat on the plate.
+  description: Bring the cooked meat back to the plate and place it down.
   conditionType: 7
   targetCounterName: 
   requireSpecificIngredient: 1

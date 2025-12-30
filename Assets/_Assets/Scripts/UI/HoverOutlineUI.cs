@@ -24,7 +24,6 @@ public class HoverOutlineUI : MonoBehaviour, IPointerEnterHandler, IPointerExitH
         originalScale = transform.localScale;
         originalOutline = outline.effectDistance.x;
 
-        // Bắt đầu mờ outline
         outline.effectDistance = new Vector2(0, 0);
     }
 
@@ -48,14 +47,12 @@ public class HoverOutlineUI : MonoBehaviour, IPointerEnterHandler, IPointerExitH
 
         while (true)
         {
-            // Scale animation
             transform.localScale = Vector3.Lerp(transform.localScale, targetScale, Time.deltaTime * animSpeed);
 
-            // Outline animation
+            
             float newOutline = Mathf.Lerp(outline.effectDistance.x, targetOutline, Time.deltaTime * animSpeed);
             outline.effectDistance = new Vector2(newOutline, newOutline);
 
-            // Dừng khi gần đạt mục tiêu
             if (Vector3.Distance(transform.localScale, targetScale) < 0.001f &&
                 Mathf.Abs(outline.effectDistance.x - targetOutline) < 0.01f)
             {

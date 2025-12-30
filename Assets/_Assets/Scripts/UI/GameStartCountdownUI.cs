@@ -9,7 +9,7 @@ public class GameStartCountdownUI : MonoBehaviour
     {
         KitchenGameManager.Instance.OnStateChanged += KitchenGameManager_OnStateChanged;
 
-        // Luôn tắt khi bắt đầu game
+  
         Hide();
     }
 

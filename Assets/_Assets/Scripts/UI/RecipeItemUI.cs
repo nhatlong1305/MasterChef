@@ -34,7 +34,7 @@ public class RecipeItemUI : MonoBehaviour
     private IEnumerator FailAnimation()
     {
         background.color = failedColor;
-        // Fade out
+    
         float t = 0;
         while (t < 1)
         {

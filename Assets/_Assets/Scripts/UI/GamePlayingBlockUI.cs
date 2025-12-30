@@ -13,7 +13,7 @@ public class GamePlayingBlockUI : MonoBehaviour
 
     private void Instance_OnStateChanged(object sender, System.EventArgs e)
     {
-        
+
         if (TutorialManager.Instance != null && TutorialManager.Instance.IsTutorialRunning)
         {
             Hide();

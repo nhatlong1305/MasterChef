@@ -12,9 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 19fed08f40488a54ca248c59c9e390b5, type: 3}
   m_Name: Step_12_PlaceMeatOnStove
   m_EditorClassIdentifier: 
-  title: "\u0110\u1EB7t Meat l\xEAn b\u1EBFp"
-  description: "Nh\u1EA5n E \u0111\u1EC3 \u0111\u1EB7t Meat l\xEAn Stove."
-  icon: {fileID: 0}
+  title: Place the meat on the stove.
+  description: Press E to place the Meat on the Stove.
   conditionType: 2
   targetCounterName: StoveCounter
   requireSpecificIngredient: 0

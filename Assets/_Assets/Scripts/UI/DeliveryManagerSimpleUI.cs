@@ -26,14 +26,14 @@ public class DeliveryManagerSimpleUI : MonoBehaviour
 
         recipeNameText.text = instance.recipe.recipeName;
 
-        // Reset icon list
+      
         foreach (Transform child in iconContainer)
         {
             if (child == iconTemplate) continue;
             Destroy(child.gameObject);
         }
 
-        // Spawn icons
+  
         foreach (KitchenObjectSO kitchenObjectSO in instance.recipe.kitchenObjectSOList)
         {
             Transform iconTranform = Instantiate(iconTemplate, iconContainer);
@@ -41,7 +41,7 @@ public class DeliveryManagerSimpleUI : MonoBehaviour
             iconTranform.GetComponent<Image>().sprite = kitchenObjectSO.sprite;
         }
 
-        // Setup Timer UI
+      
         timerSlider.maxValue = instance.recipe.recipeDuration;
         timerSlider.value = instance.recipe.recipeDuration;
     }
