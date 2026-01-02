@@ -15,8 +15,6 @@ public class TutorialManager : MonoBehaviour
     [Header("Highlight Targets")]
     public TutorialHighlightTarget[] highlightTargets;
 
-    [SerializeField] private GameObject tutorialPopup;
-
     private int currentStepIndex = -1;
     private TutorialStepSO currentStep;
     private BaseCounter cachedTargetCounter;
@@ -27,8 +25,16 @@ public class TutorialManager : MonoBehaviour
 
     private const string SKIP_KEY = "SkipTutorial";
 
+    // ==================== LIFECYCLE ====================
+
     private void Awake()
     {
+        if (Instance != null)
+        {
+            Destroy(gameObject);
+            return;
+        }
+
         Instance = this;
         PlateKitchenObject.OnAnyIngredientAdded += OnPlateIngredientAdded;
     }
@@ -44,27 +50,21 @@ public class TutorialManager : MonoBehaviour
     {
         yield return null;
 
-        // ⭐ 1) Check restart tutorial skip BEFORE disabling UI
         if (PlayerPrefs.GetInt(SKIP_KEY, 0) == 1)
         {
             PlayerPrefs.SetInt(SKIP_KEY, 0);
             PlayerPrefs.Save();
 
-            // ẩn popup ngay lập tức
-            tutorialPopup.SetActive(false);
-
-            // bật lại UI gameplay (vì restart không dùng tutorial)
             EnableGameplayUI();
-
-            FinishTutorial();  // countdown + gameplay start
+            FinishTutorial();
             yield break;
         }
 
-        // ⭐ 2) Nếu KHÔNG skip → chạy tutorial như bình thường
         DisableGameplayUI();
-        tutorialPopup.SetActive(true);
+        gameObject.SetActive(true); // 👉 tự bật chính nó
     }
 
+    // ==================== UI CONTROL ====================
 
     private void DisableGameplayUI()
     {
@@ -80,7 +80,7 @@ public class TutorialManager : MonoBehaviour
         GameObject.Find("GamePlayingBlockUI")?.SetActive(true);
     }
 
-    // ====================== START / SKIP / END ======================
+    // ==================== PUBLIC API ====================
 
     public void StartTutorial()
     {
@@ -94,6 +94,8 @@ public class TutorialManager : MonoBehaviour
         FinishTutorial();
     }
 
+    // ==================== CORE ====================
+
     private void FinishTutorial()
     {
         isTutorialRunning = false;
@@ -106,12 +108,10 @@ public class TutorialManager : MonoBehaviour
         EnableGameplayUI();
         OnTutorialCompleted?.Invoke();
 
-        // Bắt đầu countdown
         KitchenGameManager.Instance.StartCountdownAfterTutorial();
+
+        gameObject.SetActive(false); // 👉 tự tắt chính nó
     }
-
-
-    // ====================== STEP HANDLING ======================
 
     private void LoadCurrentStep()
     {
@@ -126,7 +126,6 @@ public class TutorialManager : MonoBehaviour
 
         currentStep = steps[currentStepIndex];
 
-        // Find target counter
         GameObject obj = null;
         if (!string.IsNullOrEmpty(currentStep.targetCounterName))
             obj = GameObject.Find(currentStep.targetCounterName);
@@ -152,8 +151,6 @@ public class TutorialManager : MonoBehaviour
         LoadCurrentStep();
     }
 
-    // ====================== HIGHLIGHT ======================
-
     private void ApplyHighlight(TutorialStepSO step)
     {
         foreach (var t in highlightTargets)
@@ -169,7 +166,7 @@ public class TutorialManager : MonoBehaviour
         }
     }
 
-    // ====================== UPDATE LOOP ======================
+    // ==================== UPDATE ====================
 
     private void Update()
     {
@@ -192,13 +189,16 @@ public class TutorialManager : MonoBehaviour
     {
         if (!cachedTargetCounter) return;
 
-        float dist = Vector3.Distance(player.transform.position, cachedTargetCounter.transform.position);
+        float dist = Vector3.Distance(
+            player.transform.position,
+            cachedTargetCounter.transform.position
+        );
 
         if (dist < 2f)
             NextStep();
     }
 
-    // ====================== GAMEPLAY EVENTS ======================
+    // ==================== EVENT REGISTER ====================
 
     private void RegisterGameplayEvents()
     {
@@ -219,22 +219,21 @@ public class TutorialManager : MonoBehaviour
         }
     }
 
+    // ==================== EVENT HANDLERS ====================
+
     private void Player_OnPickedSomething(object sender, EventArgs e)
     {
         if (!isTutorialRunning || currentStep == null) return;
+        if (currentStep.conditionType != TutorialConditionType.TakeIngredient) return;
 
-        if (currentStep.conditionType == TutorialConditionType.TakeIngredient)
-        {
-            KitchenObject obj = player.GetKitchenObject();
-            if (obj && obj.GetKitchenObjectSO() == currentStep.targetIngredient)
-                NextStep();
-        }
+        KitchenObject obj = player.GetKitchenObject();
+        if (obj && obj.GetKitchenObjectSO() == currentStep.targetIngredient)
+            NextStep();
     }
 
     private void Player_OnSelectedCounterChanged(object sender, Player.OnSelectedCounterChangedEventArgs e)
     {
         if (!isTutorialRunning || currentStep == null) return;
-
         if (currentStep.conditionType != TutorialConditionType.InteractAtCounter) return;
 
         player.GameInput.OnInteractAction -= OnInteractCorrectCounter;
@@ -265,7 +264,6 @@ public class TutorialManager : MonoBehaviour
     {
         if (!isTutorialRunning || currentStep == null) return;
         if (currentStep.conditionType != TutorialConditionType.PlaceIngredient) return;
-
         if (sender as BaseCounter != cachedTargetCounter) return;
 
         if (!currentStep.requireSpecificIngredient ||
@@ -298,7 +296,10 @@ public class TutorialManager : MonoBehaviour
             if (obj && obj.GetKitchenObjectSO() == currentStep.targetIngredient)
                 NextStep();
         }
-        else NextStep();
+        else
+        {
+            NextStep();
+        }
     }
 
     private void Stove_OnCooked(object sender, EventArgs e)

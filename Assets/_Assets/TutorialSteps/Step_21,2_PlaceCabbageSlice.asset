@@ -10,10 +10,10 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 19fed08f40488a54ca248c59c9e390b5, type: 3}
-  m_Name: Step_19_PlaceCabbageSlice
+  m_Name: Step_21,2_PlaceCabbageSlice
   m_EditorClassIdentifier: 
-  title: Prepare Cabbage Slices
-  description: "Take the cabbage \u2192 Cut \u2192 Place on a plate."
+  title: Place the cabbage slices on the plate.
+  description: Bring the cabbage back to the plate and place it down.
   conditionType: 7
   targetCounterName: 
   requireSpecificIngredient: 1

@@ -181,7 +181,7 @@ public class DeliveryManager : MonoBehaviour
         if (easyRecipes.Count > 0)
             return easyRecipes[UnityEngine.Random.Range(0, easyRecipes.Count)];
 
-        Debug.LogError("NO RECIPES AVAILABLE!");
+ 
         return null;
     }
 

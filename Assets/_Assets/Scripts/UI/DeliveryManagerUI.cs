@@ -17,14 +17,24 @@ public class DeliveryManagerUI : MonoBehaviour
 
     private void Start()
     {
-        DeliveryManager.Instance.OnRecipeSpawned += DeliveryManager_OnRecipeSpawned;
-        DeliveryManager.Instance.OnRecipeFailed += DeliveryManager_OnRecipeFailed;
-        DeliveryManager.Instance.OnRecipeCompleted += DeliveryManager_OnRecipeCompleted;
+        //  Delivery 
+        if (DeliveryManager.Instance != null)
+        {
+            DeliveryManager.Instance.OnRecipeSpawned += DeliveryManager_OnRecipeSpawned;
+            DeliveryManager.Instance.OnRecipeFailed += DeliveryManager_OnRecipeFailed;
+            DeliveryManager.Instance.OnRecipeCompleted += DeliveryManager_OnRecipeCompleted;
+        }
 
-        KitchenGameManager.Instance.OnStateChanged += KitchenGameManager_OnStateChanged;
+        //  Game State 
+        if (KitchenGameManager.Instance != null)
+        {
+            KitchenGameManager.Instance.OnStateChanged += KitchenGameManager_OnStateChanged;
+        }
 
+        //  Plate 
         PlateKitchenObject.OnAnyIngredientAdded += Plate_OnAnyIngredientAdded;
 
+        //  Tutorial 
         if (TutorialManager.Instance != null)
         {
             TutorialManager.Instance.OnStepChanged += OnTutorialStep;
@@ -32,12 +42,13 @@ public class DeliveryManagerUI : MonoBehaviour
         }
 
         UpdateVisual();
-        Hide();
+        Hide(); 
     }
+
 
     private void OnDestroy()
     {
-        // tránh leak event
+        //  Delivery 
         if (DeliveryManager.Instance != null)
         {
             DeliveryManager.Instance.OnRecipeSpawned -= DeliveryManager_OnRecipeSpawned;
@@ -45,13 +56,23 @@ public class DeliveryManagerUI : MonoBehaviour
             DeliveryManager.Instance.OnRecipeCompleted -= DeliveryManager_OnRecipeCompleted;
         }
 
+        //  Game State 
         if (KitchenGameManager.Instance != null)
         {
             KitchenGameManager.Instance.OnStateChanged -= KitchenGameManager_OnStateChanged;
         }
 
+        //  Plate
         PlateKitchenObject.OnAnyIngredientAdded -= Plate_OnAnyIngredientAdded;
+
+        //  Tutorial 
+        if (TutorialManager.Instance != null)
+        {
+            TutorialManager.Instance.OnStepChanged -= OnTutorialStep;
+            TutorialManager.Instance.OnTutorialCompleted -= OnTutorialCompleted;
+        }
     }
+
 
 
     private void KitchenGameManager_OnStateChanged(object sender, EventArgs e)

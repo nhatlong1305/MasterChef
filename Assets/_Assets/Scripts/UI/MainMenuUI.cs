@@ -24,6 +24,17 @@ public class MainMenuUI : MonoBehaviour
             Application.Quit();
         });
     }
+    public void OnPlayButton()
+    {
+        SoundManager.Instance.PlayUIClickSound();
+        Loader.Load(Loader.Scene.Kitchen);
+    }
+
+    public void OnQuitButton()
+    {
+        SoundManager.Instance.PlayUIClickSound();
+        Application.Quit();
+    }
 
     private void AddEffects(Button btn, System.Action action)
     {

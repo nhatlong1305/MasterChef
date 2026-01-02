@@ -28,17 +28,7 @@ public class UIManager : MonoBehaviour
     }
 
 
-    public void OnPlayButton()
-    {
-        SoundManager.Instance.PlayUIClickSound();
-        Loader.Load(Loader.Scene.Kitchen);
-    }
-
-    public void OnQuitButton()
-    {
-        SoundManager.Instance.PlayUIClickSound();
-        Application.Quit();
-    }
+    
 
 
 
