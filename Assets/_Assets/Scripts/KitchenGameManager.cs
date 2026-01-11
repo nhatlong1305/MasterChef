@@ -37,6 +37,10 @@ public class KitchenGameManager : MonoBehaviour
 
         Instance = this;
         state = State.WaitingToStart;
+
+
+        ShowCursor(); 
+
     }
 
     private void Update()
@@ -50,13 +54,8 @@ public class KitchenGameManager : MonoBehaviour
             case State.GamePlaying:
                 HandleGamePlaying();
                 break;
-
-            case State.GameOver:
-              
-                break;
         }
     }
-
 
     private void HandleCountdown()
     {
@@ -81,29 +80,49 @@ public class KitchenGameManager : MonoBehaviour
         }
     }
 
-
     private void SetState(State newState)
     {
         state = newState;
 
         switch (state)
         {
+            case State.WaitingToStart:
+                HideCursor(); 
+                break;
+
             case State.CountdownToStart:
                 countdownToStartTimer = countdownToStartTimerMax;
+                HideCursor(); 
                 break;
 
             case State.GamePlaying:
                 gamePlayingTimer = gamePlayingTimerMax;
+                HideCursor();
                 break;
 
             case State.GameOver:
+                ShowCursor(); 
                 break;
         }
 
         OnStateChanged?.Invoke(this, EventArgs.Empty);
     }
 
-    
+
+    // ================= CURSOR =================
+    private void HideCursor()
+    {
+        Cursor.visible = false;
+        Cursor.lockState = CursorLockMode.Locked;
+    }
+
+    private void ShowCursor()
+    {
+        Cursor.visible = true;
+        Cursor.lockState = CursorLockMode.None;
+    }
+
+    // ================= PUBLIC API =================
     public void StartCountdownAfterTutorial()
     {
         if (state != State.WaitingToStart) return;

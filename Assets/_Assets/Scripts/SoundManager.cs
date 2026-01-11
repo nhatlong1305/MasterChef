@@ -206,7 +206,7 @@ public class SoundManager : MonoBehaviour
 
     private void PlayWorldSound(AudioClip[] clips, Vector3 position, float volume = 1f)
     {
-        if (!isGameplaySoundEnabled) return; // 🔥 CHỐT HẠ
+        if (!isGameplaySoundEnabled) return; 
 
         if (clips == null || clips.Length == 0) return;
 
