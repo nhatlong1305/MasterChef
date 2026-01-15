@@ -4,6 +4,7 @@ using UnityEngine.UI;
 using TMPro;
 using System.Collections;
 using System.Collections.Generic;
+using static DeliveryManager;
 
 public class DeliveryManagerUI : MonoBehaviour
 {
@@ -17,7 +18,7 @@ public class DeliveryManagerUI : MonoBehaviour
 
     private void Start()
     {
-        //  Delivery 
+        // ================= DELIVERY =================
         if (DeliveryManager.Instance != null)
         {
             DeliveryManager.Instance.OnRecipeSpawned += DeliveryManager_OnRecipeSpawned;
@@ -25,16 +26,16 @@ public class DeliveryManagerUI : MonoBehaviour
             DeliveryManager.Instance.OnRecipeCompleted += DeliveryManager_OnRecipeCompleted;
         }
 
-        //  Game State 
+        // ================= GAME STATE =================
         if (KitchenGameManager.Instance != null)
         {
             KitchenGameManager.Instance.OnStateChanged += KitchenGameManager_OnStateChanged;
         }
 
-        //  Plate 
+        // ================= PLATE =================
         PlateKitchenObject.OnAnyIngredientAdded += Plate_OnAnyIngredientAdded;
 
-        //  Tutorial 
+        // ================= TUTORIAL =================
         if (TutorialManager.Instance != null)
         {
             TutorialManager.Instance.OnStepChanged += OnTutorialStep;
@@ -42,13 +43,11 @@ public class DeliveryManagerUI : MonoBehaviour
         }
 
         UpdateVisual();
-        Hide(); 
+        Hide();
     }
-
 
     private void OnDestroy()
     {
-        //  Delivery 
         if (DeliveryManager.Instance != null)
         {
             DeliveryManager.Instance.OnRecipeSpawned -= DeliveryManager_OnRecipeSpawned;
@@ -56,16 +55,13 @@ public class DeliveryManagerUI : MonoBehaviour
             DeliveryManager.Instance.OnRecipeCompleted -= DeliveryManager_OnRecipeCompleted;
         }
 
-        //  Game State 
         if (KitchenGameManager.Instance != null)
         {
             KitchenGameManager.Instance.OnStateChanged -= KitchenGameManager_OnStateChanged;
         }
 
-        //  Plate
         PlateKitchenObject.OnAnyIngredientAdded -= Plate_OnAnyIngredientAdded;
 
-        //  Tutorial 
         if (TutorialManager.Instance != null)
         {
             TutorialManager.Instance.OnStepChanged -= OnTutorialStep;
@@ -73,8 +69,7 @@ public class DeliveryManagerUI : MonoBehaviour
         }
     }
 
-
-
+    // ================= GAME STATE =================
     private void KitchenGameManager_OnStateChanged(object sender, EventArgs e)
     {
         if (KitchenGameManager.Instance.IsCountdownToStartActive())
@@ -93,12 +88,10 @@ public class DeliveryManagerUI : MonoBehaviour
         if (KitchenGameManager.Instance.IsGameOver())
         {
             Hide();
-            return;
         }
     }
 
-
-
+    // ================= DELIVERY EVENTS =================
     private void DeliveryManager_OnRecipeSpawned(object sender, EventArgs e)
     {
         UpdateVisual();
@@ -127,15 +120,18 @@ public class DeliveryManagerUI : MonoBehaviour
         RemoveRecipeUI(recipeId);
     }
 
-
-
-    private void Plate_OnAnyIngredientAdded(object sender, PlateKitchenObject.OnIngredientAddedEventArgs e)
+    // ================= PLATE =================
+    private void Plate_OnAnyIngredientAdded(
+        object sender,
+        PlateKitchenObject.OnIngredientAddedEventArgs e)
     {
         PlateKitchenObject plate = sender as PlateKitchenObject;
         if (plate == null) return;
 
         List<KitchenObjectSO> ingredients = plate.GetKitchenObjectSOList();
-        var match = DeliveryManager.Instance.GetBestMatchingRecipe(ingredients);
+
+        var match =
+            DeliveryManager.Instance.GetBestMatchingRecipe(ingredients);
 
         if (match != null)
             HighlightRecipe(match.id);
@@ -143,6 +139,7 @@ public class DeliveryManagerUI : MonoBehaviour
             ClearHighlight();
     }
 
+    // ================= UI =================
     private void UpdateVisual()
     {
         if (TutorialManager.Instance != null &&
@@ -166,17 +163,16 @@ public class DeliveryManagerUI : MonoBehaviour
             var simpleUI = obj.GetComponent<DeliveryManagerSimpleUI>();
             simpleUI.SetRecipeInstance(inst);
 
-
             var itemUI = obj.gameObject.AddComponent<RecipeItemUI>();
             Image bg = obj.Find("Background").GetComponent<Image>();
             TextMeshProUGUI nameText =
-                obj.Find("Background/RecipesNameText").GetComponent<TextMeshProUGUI>();
+                obj.Find("Background/RecipesNameText")
+                   .GetComponent<TextMeshProUGUI>();
 
             itemUI.Init(bg, nameText);
             itemUI.SetRecipe(inst.recipe);
         }
     }
-
 
     private void RemoveRecipeUI(string recipeId)
     {
@@ -193,7 +189,6 @@ public class DeliveryManagerUI : MonoBehaviour
         }
     }
 
-
     private void ShowFailedAnimation(string recipeId)
     {
         foreach (Transform child in container)
@@ -206,15 +201,11 @@ public class DeliveryManagerUI : MonoBehaviour
             {
                 var item = child.GetComponent<RecipeItemUI>();
                 if (item != null)
-                {
                     item.PlayFailedEffect();
-                }
                 break;
             }
         }
     }
-
-
 
     private void HighlightRecipe(string recipeId)
     {
@@ -224,9 +215,7 @@ public class DeliveryManagerUI : MonoBehaviour
 
             var ui = child.GetComponent<DeliveryManagerSimpleUI>();
             if (ui != null)
-            {
                 ui.SetHighlighted(ui.RecipeId == recipeId);
-            }
         }
     }
 
@@ -238,14 +227,11 @@ public class DeliveryManagerUI : MonoBehaviour
 
             var ui = child.GetComponent<DeliveryManagerSimpleUI>();
             if (ui != null)
-            {
                 ui.SetHighlighted(false);
-            }
         }
     }
 
-
-
+    // ================= TUTORIAL =================
     private void OnTutorialStep(object sender, TutorialStepSO step)
     {
         Hide();

@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+#region EVENT ARGS
 public class RecipeDeliveredEventArgs : EventArgs
 {
     public string recipeId;
@@ -13,97 +14,124 @@ public class RecipeFailedEventArgs : EventArgs
     public string recipeId;
     public RecipeSO recipe;
 }
+#endregion
 
 public class DeliveryManager : MonoBehaviour
 {
+    // ================= EVENTS =================
     public event EventHandler OnRecipeSpawned;
     public event EventHandler<RecipeDeliveredEventArgs> OnRecipeCompleted;
-
     public event EventHandler OnRecipeSuccess;
     public event EventHandler<RecipeFailedEventArgs> OnRecipeFailed;
 
+    // ================= SINGLETON =================
     public static DeliveryManager Instance { get; private set; }
 
+    // ================= CONFIG =================
     [SerializeField] private RecipeListSO recipeListSO;
 
+    [Header("Game Duration")]
+    [SerializeField] private float gameDuration = 180f; // ⭐ 3 phút (chuẩn)
+
+    [Header("Spawn")]
+    [SerializeField] private float spawnRecipeTimerMax = 4f;
+
+    // ================= STATE =================
+    private float gameTime;
     private float spawnRecipeTimer;
-    private float spawnRecipeTimerMax = 4f;
-
-    private int successfulRecipesAmount = 0;
-
-    [SerializeField] private float gameDuration = 300f;
-    private float gameTime = 0f;
 
     private float spawnSpeedMultiplier = 1f;
     private float recipeTimeMultiplier = 1f;
     private int currentMaxRecipes = 2;
 
-    private List<RecipeSO> easyRecipes = new List<RecipeSO>();
-    private List<RecipeSO> mediumRecipes = new List<RecipeSO>();
-    private List<RecipeSO> hardRecipes = new List<RecipeSO>();
+    private int successfulRecipesAmount;
 
+    // ================= RECIPE GROUP =================
+    private readonly List<RecipeSO> easyRecipes = new();
+    private readonly List<RecipeSO> mediumRecipes = new();
+    private readonly List<RecipeSO> hardRecipes = new();
 
+    // ================= RECIPE INSTANCE =================
     [Serializable]
     public class RecipeInstance
     {
         public string id;
         public RecipeSO recipe;
         public float remainingTime;
+        public bool isFailed;
 
-        public RecipeInstance(RecipeSO recipe)
+        public RecipeInstance(RecipeSO recipe, float timeMultiplier)
         {
             this.recipe = recipe;
-            this.remainingTime = recipe.recipeDuration;
-            this.id = Guid.NewGuid().ToString();
+            remainingTime = recipe.recipeDuration / timeMultiplier;
+            id = Guid.NewGuid().ToString();
+            isFailed = false;
         }
     }
 
-    private List<RecipeInstance> waitingRecipes = new List<RecipeInstance>();
+    private readonly List<RecipeInstance> waitingRecipes = new();
 
-
+    // ================= LIFECYCLE =================
     private void Awake()
     {
+        if (Instance != null)
+        {
+            Destroy(gameObject);
+            return;
+        }
         Instance = this;
 
         foreach (var recipe in recipeListSO.recipeSOList)
         {
             int count = recipe.kitchenObjectSOList.Count;
 
-            if (count >= 2 && count <= 3) easyRecipes.Add(recipe);
-            if (count >= 2 && count <= 4) mediumRecipes.Add(recipe);
-            if (count >= 2 && count <= 5) hardRecipes.Add(recipe);
+            if (count <= 2)
+                easyRecipes.Add(recipe);
+            else if (count <= 4)
+                mediumRecipes.Add(recipe);
+            else
+                hardRecipes.Add(recipe);
         }
+
     }
 
 
     private void Update()
     {
-        if (TutorialManager.Instance != null && TutorialManager.Instance.IsTutorialRunning)
+        // ❌ Tutorial đang chạy → không spawn
+        if (TutorialManager.Instance != null &&
+            TutorialManager.Instance.IsTutorialRunning)
             return;
 
+        // ⏱ Game time
         gameTime += Time.deltaTime;
-        if (gameTime > gameDuration) gameTime = gameDuration;
+        gameTime = Mathf.Min(gameTime, gameDuration);
 
         UpdateDifficulty();
 
+        // ⏳ Spawn recipe
         spawnRecipeTimer -= Time.deltaTime * spawnSpeedMultiplier;
-
         if (spawnRecipeTimer <= 0f)
         {
-            spawnRecipeTimer = spawnRecipeTimerMax;
+            spawnRecipeTimer = Mathf.Max(1.2f, spawnRecipeTimerMax / spawnSpeedMultiplier);
 
             if (waitingRecipes.Count < currentMaxRecipes)
                 SpawnRandomRecipe();
         }
 
+        // ⏰ Update recipe timers
         for (int i = waitingRecipes.Count - 1; i >= 0; i--)
         {
             RecipeInstance inst = waitingRecipes[i];
+
+            if (inst.isFailed) continue;
 
             inst.remainingTime -= Time.deltaTime;
 
             if (inst.remainingTime <= 0f)
             {
+                inst.isFailed = true;
+
                 OnRecipeFailed?.Invoke(this, new RecipeFailedEventArgs
                 {
                     recipeId = inst.id,
@@ -115,33 +143,35 @@ public class DeliveryManager : MonoBehaviour
         }
     }
 
+    // ================= SPAWN =================
+    private void SpawnRandomRecipe()
+    {
+        RecipeSO recipe = GetRecipeBasedOnDifficulty();
+        if (recipe == null) return;
+
+        RecipeInstance inst = new RecipeInstance(recipe, recipeTimeMultiplier);
+        waitingRecipes.Add(inst);
+
+        OnRecipeSpawned?.Invoke(this, EventArgs.Empty);
+    }
 
     private IEnumerator RemoveRecipeAfterDelay(string recipeId)
     {
         yield return new WaitForSeconds(0.7f);
 
-        for (int i = 0; i < waitingRecipes.Count; i++)
-        {
-            if (waitingRecipes[i].id == recipeId)
-            {
-                waitingRecipes.RemoveAt(i);
-                break;
-            }
-        }
+        waitingRecipes.RemoveAll(r => r.id == recipeId);
     }
 
-
+    // ================= DIFFICULTY =================
     private void UpdateDifficulty()
     {
-        float t = gameTime / gameDuration;
-
-        if (t < 0.2f)
+        if (gameTime < 30f)
         {
             currentMaxRecipes = 2;
             spawnSpeedMultiplier = 1f;
             recipeTimeMultiplier = 1f;
         }
-        else if (t < 0.6f)
+        else if (gameTime < 60f)
         {
             currentMaxRecipes = 3;
             spawnSpeedMultiplier = 1.3f;
@@ -156,74 +186,136 @@ public class DeliveryManager : MonoBehaviour
     }
 
 
+
     private RecipeSO GetRecipeBasedOnDifficulty()
     {
-        float t = gameTime / gameDuration;
-
-        if (t < 0.2f && easyRecipes.Count > 0)
-            return easyRecipes[UnityEngine.Random.Range(0, easyRecipes.Count)];
-
-        if (t < 0.6f)
+        // ===== 0 – 30s: EASY ONLY =====
+        if (gameTime < 30f)
         {
-            if (UnityEngine.Random.value < 0.7f && easyRecipes.Count > 0)
-                return easyRecipes[UnityEngine.Random.Range(0, easyRecipes.Count)];
-
-            if (mediumRecipes.Count > 0)
-                return mediumRecipes[UnityEngine.Random.Range(0, mediumRecipes.Count)];
+            return easyRecipes.Count > 0
+                ? easyRecipes[UnityEngine.Random.Range(0, easyRecipes.Count)]
+                : null;
         }
 
-        if (UnityEngine.Random.value < 0.3f && mediumRecipes.Count > 0)
+        // ===== 30 – 60s: MEDIUM ONLY =====
+        if (gameTime < 60f)
+        {
+            return mediumRecipes.Count > 0
+                ? mediumRecipes[UnityEngine.Random.Range(0, mediumRecipes.Count)]
+                : easyRecipes.Count > 0
+                    ? easyRecipes[UnityEngine.Random.Range(0, easyRecipes.Count)]
+                    : null;
+        }
+
+        // ===== > 60s: RANDOM EASY / MEDIUM / HARD =====
+        float rand = UnityEngine.Random.value;
+
+        if (rand < 0.33f && easyRecipes.Count > 0)
+            return easyRecipes[UnityEngine.Random.Range(0, easyRecipes.Count)];
+
+        if (rand < 0.66f && mediumRecipes.Count > 0)
             return mediumRecipes[UnityEngine.Random.Range(0, mediumRecipes.Count)];
 
         if (hardRecipes.Count > 0)
             return hardRecipes[UnityEngine.Random.Range(0, hardRecipes.Count)];
 
-        if (easyRecipes.Count > 0)
-            return easyRecipes[UnityEngine.Random.Range(0, easyRecipes.Count)];
+        // Fallback an toàn
+        if (mediumRecipes.Count > 0)
+            return mediumRecipes[UnityEngine.Random.Range(0, mediumRecipes.Count)];
 
- 
-        return null;
+        return easyRecipes.Count > 0
+            ? easyRecipes[UnityEngine.Random.Range(0, easyRecipes.Count)]
+            : null;
     }
 
 
 
-
-    public List<RecipeInstance> GetWaitingRecipes() => waitingRecipes;
-
-    public int GetSuccessfulRecipesAmount() => successfulRecipesAmount;
-
-
-    public RecipeInstance GetBestMatchingRecipe(List<KitchenObjectSO> plateIngredients)
+    // ================= DELIVERY =================
+    public void DeliverRecipe(PlateKitchenObject plate)
     {
-        RecipeInstance bestFull = null;
-        RecipeInstance bestPartial = null;
+        if (TutorialManager.Instance != null &&
+            TutorialManager.Instance.IsTutorialRunning)
+            return;
+
+        List<KitchenObjectSO> plateIngredients = plate.GetKitchenObjectSOList();
+
+        for (int i = 0; i < waitingRecipes.Count; i++)
+        {
+            RecipeInstance inst = waitingRecipes[i];
+
+            if (IsRecipeMatch(inst.recipe, plateIngredients))
+            {
+                successfulRecipesAmount++;
+
+                int score = inst.recipe.GetRecipeScore();
+                ScoreManager.Instance.AddRecipeScore(score);
+
+                OnRecipeCompleted?.Invoke(this,
+                    new RecipeDeliveredEventArgs { recipeId = inst.id });
+
+                waitingRecipes.RemoveAt(i);
+
+                OnRecipeSuccess?.Invoke(this, EventArgs.Empty);
+                return;
+            }
+        }
+
+        // ❌ Sai món
+        OnRecipeFailed?.Invoke(this,
+            new RecipeFailedEventArgs { recipeId = null, recipe = null });
+    }
+
+    // ================= MATCH =================
+    private bool IsRecipeMatch(RecipeSO recipe, List<KitchenObjectSO> plate)
+    {
+        if (recipe.kitchenObjectSOList.Count != plate.Count) return false;
+
+        foreach (var required in recipe.kitchenObjectSOList)
+        {
+            if (!plate.Contains(required))
+                return false;
+        }
+        return true;
+    }
+
+    // ================= PUBLIC API =================
+    public List<RecipeInstance> GetWaitingRecipes() => waitingRecipes;
+    public int GetSuccessfulRecipesAmount() => successfulRecipesAmount;
+    public RecipeInstance GetBestMatchingRecipe(
+    List<KitchenObjectSO> plateIngredients)
+    {
+        RecipeInstance bestFullMatch = null;
+        RecipeInstance bestPartialMatch = null;
 
         foreach (var inst in waitingRecipes)
         {
             RecipeSO recipe = inst.recipe;
 
+            // ✅ Full match (ưu tiên cao nhất)
             if (recipe.kitchenObjectSOList.Count == plateIngredients.Count &&
                 IsRecipeMatch(recipe, plateIngredients))
             {
-                bestFull = inst;
+                bestFullMatch = inst;
                 break;
             }
 
+            // ⚠ Partial match (đúng nguyên liệu nhưng thiếu)
             if (IsPartialMatch(recipe, plateIngredients))
             {
-                if (bestPartial == null ||
-                    recipe.kitchenObjectSOList.Count < bestPartial.recipe.kitchenObjectSOList.Count)
+                if (bestPartialMatch == null ||
+                    recipe.kitchenObjectSOList.Count <
+                    bestPartialMatch.recipe.kitchenObjectSOList.Count)
                 {
-                    bestPartial = inst;
+                    bestPartialMatch = inst;
                 }
             }
         }
 
-        return bestFull ?? bestPartial;
+        return bestFullMatch ?? bestPartialMatch;
     }
-
-
-    private bool IsPartialMatch(RecipeSO recipe, List<KitchenObjectSO> plate)
+    private bool IsPartialMatch(
+        RecipeSO recipe,
+        List<KitchenObjectSO> plate)
     {
         if (plate.Count == 0) return false;
         if (plate.Count > recipe.kitchenObjectSOList.Count) return false;
@@ -233,85 +325,8 @@ public class DeliveryManager : MonoBehaviour
             if (!recipe.kitchenObjectSOList.Contains(ing))
                 return false;
         }
+
         return true;
     }
 
-
-    private void SpawnRandomRecipe()
-    {
-        RecipeSO recipe = GetRecipeBasedOnDifficulty();
-        if (recipe == null) return;
-
-        RecipeInstance inst = new RecipeInstance(recipe);
-        inst.remainingTime = recipe.recipeDuration / recipeTimeMultiplier;
-
-        waitingRecipes.Add(inst);
-
-        OnRecipeSpawned?.Invoke(this, EventArgs.Empty);
-    }
-
-
-    public void DeliverRecipe(PlateKitchenObject plate)
-    {
-        if (TutorialManager.Instance != null && TutorialManager.Instance.IsTutorialRunning)
-            return;
-
-        List<KitchenObjectSO> plateIngredients = plate.GetKitchenObjectSOList();
-
-        for (int i = 0; i < waitingRecipes.Count; i++)
-        {
-            RecipeInstance inst = waitingRecipes[i];
-            RecipeSO recipe = inst.recipe;
-
-            if (recipe.kitchenObjectSOList.Count == plateIngredients.Count &&
-                IsRecipeMatch(recipe, plateIngredients))
-            {
-                successfulRecipesAmount++;
-
-                int score = recipe.GetRecipeScore();
-                ScoreManager.Instance.AddRecipeScore(score);
-
-                OnRecipeCompleted?.Invoke(this, new RecipeDeliveredEventArgs
-                {
-                    recipeId = inst.id
-                });
-
-                waitingRecipes.RemoveAt(i);
-
-                OnRecipeSuccess?.Invoke(this, EventArgs.Empty);
-
-                return;
-            }
-        }
-
-        // Fail
-        OnRecipeFailed?.Invoke(this, new RecipeFailedEventArgs
-        {
-            recipeId = null,
-            recipe = null
-        });
-    }
-
-
-
-    private bool IsRecipeMatch(RecipeSO recipe, List<KitchenObjectSO> plate)
-    {
-        foreach (var required in recipe.kitchenObjectSOList)
-        {
-            bool found = false;
-
-            foreach (var ing in plate)
-            {
-                if (required == ing)
-                {
-                    found = true;
-                    break;
-                }
-            }
-
-            if (!found)
-                return false;
-        }
-        return true;
-    }
 }

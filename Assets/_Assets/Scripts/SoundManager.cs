@@ -11,13 +11,13 @@ public class SoundManager : MonoBehaviour
 
     private bool isGameplaySoundEnabled = true;
 
-
-    private AudioSource musicAudioSource;   
-    private AudioSource uiAudioSource;  
+    // ================= AUDIO SOURCES =================
+    private AudioSource musicAudioSource;     // Nhạc nền
+    private AudioSource uiAudioSource;        // UI sound (hover, click)
 
     private readonly List<AudioSource> gameplayAudioSources = new();
 
-
+    // ================= LIFECYCLE =================
     private void Awake()
     {
         if (Instance != null)
@@ -29,16 +29,18 @@ public class SoundManager : MonoBehaviour
         Instance = this;
         DontDestroyOnLoad(gameObject);
 
-      
+        // 🎵 Music
         musicAudioSource = gameObject.AddComponent<AudioSource>();
         musicAudioSource.loop = true;
         musicAudioSource.spatialBlend = 0f;
         musicAudioSource.volume = 0.4f;
 
+        // 🔊 UI Sound (BỎ QUA PAUSE)
         uiAudioSource = gameObject.AddComponent<AudioSource>();
         uiAudioSource.loop = false;
         uiAudioSource.spatialBlend = 0f;
         uiAudioSource.volume = 1f;
+        uiAudioSource.ignoreListenerPause = true;   // ⭐ QUAN TRỌNG
     }
 
     private void Start()
@@ -55,11 +57,10 @@ public class SoundManager : MonoBehaviour
         UnregisterAllEvents();
     }
 
-  
-
+    // ================= SCENE =================
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
-        isGameplaySoundEnabled = true;   
+        isGameplaySoundEnabled = true;
 
         StopAllGameplaySounds();
         RegisterAllEvents();
@@ -74,17 +75,14 @@ public class SoundManager : MonoBehaviour
             PlayMusic(audioClipRefsSO.gameMusic);
     }
 
-
     private void PlayMusic(AudioClip clip)
     {
         if (clip == null) return;
-
         musicAudioSource.clip = clip;
         musicAudioSource.Play();
     }
 
-
-
+    // ================= EVENT REGISTER =================
     private void RegisterAllEvents()
     {
         UnregisterAllEvents();
@@ -125,24 +123,20 @@ public class SoundManager : MonoBehaviour
         TrashCounter.OnAnyobjectTrashed -= OnObjectTrashed;
     }
 
-
+    // ================= GAME EVENTS =================
     private void OnGameOver(object sender, EventArgs e)
     {
         isGameplaySoundEnabled = false;
-
         StopAllGameplaySounds();
 
         if (audioClipRefsSO.gameOverMusic == null) return;
 
         musicAudioSource.Stop();
         musicAudioSource.loop = true;
-        musicAudioSource.volume = 0.5f;
+        musicAudioSource.volume = 1f;
         musicAudioSource.clip = audioClipRefsSO.gameOverMusic;
         musicAudioSource.Play();
     }
-
-
-
 
     private void OnRecipeSuccess(object sender, EventArgs e)
     {
@@ -167,25 +161,23 @@ public class SoundManager : MonoBehaviour
 
     private void OnAnyCut(object sender, EventArgs e)
     {
-        CuttingCounter c = sender as CuttingCounter;
-        if (c == null) return;
-        PlayWorldSound(audioClipRefsSO.chop, c.transform.position);
+        if (sender is CuttingCounter c)
+            PlayWorldSound(audioClipRefsSO.chop, c.transform.position);
     }
 
     private void OnObjectPlaced(object sender, EventArgs e)
     {
-        BaseCounter c = sender as BaseCounter;
-        if (c == null) return;
-        PlayWorldSound(audioClipRefsSO.objectDrop, c.transform.position);
+        if (sender is BaseCounter c)
+            PlayWorldSound(audioClipRefsSO.objectDrop, c.transform.position);
     }
 
     private void OnObjectTrashed(object sender, EventArgs e)
     {
-        TrashCounter c = sender as TrashCounter;
-        if (c == null) return;
-        PlayWorldSound(audioClipRefsSO.trash, c.transform.position);
+        if (sender is TrashCounter c)
+            PlayWorldSound(audioClipRefsSO.trash, c.transform.position);
     }
 
+    // ================= PUBLIC API =================
     public void PlayFootstepSound(Vector3 pos, float volume)
     {
         PlayWorldSound(audioClipRefsSO.footstep, pos, volume);
@@ -203,11 +195,10 @@ public class SoundManager : MonoBehaviour
             uiAudioSource.PlayOneShot(audioClipRefsSO.uiClick[0], 1f);
     }
 
-
+    // ================= INTERNAL =================
     private void PlayWorldSound(AudioClip[] clips, Vector3 position, float volume = 1f)
     {
-        if (!isGameplaySoundEnabled) return; 
-
+        if (!isGameplaySoundEnabled) return;
         if (clips == null || clips.Length == 0) return;
 
         AudioClip clip = clips[UnityEngine.Random.Range(0, clips.Length)];
@@ -224,7 +215,6 @@ public class SoundManager : MonoBehaviour
         gameplayAudioSources.Add(src);
         Destroy(temp, clip.length);
     }
-
 
     private void StopAllGameplaySounds()
     {

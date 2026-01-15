@@ -5,10 +5,12 @@ public class KitchenGameManager : MonoBehaviour
 {
     public static KitchenGameManager Instance { get; private set; }
 
+    // ================= EVENTS =================
     public event EventHandler OnGamePlayingStarted;
     public event EventHandler OnStateChanged;
     public event EventHandler OnGameOver;
 
+    // ================= GAME STATE =================
     public enum State
     {
         WaitingToStart,
@@ -19,14 +21,17 @@ public class KitchenGameManager : MonoBehaviour
 
     private State state;
 
+    // ================= COUNTDOWN =================
     [Header("Countdown")]
     [SerializeField] private float countdownToStartTimerMax = 3f;
     private float countdownToStartTimer;
 
+    // ================= GAME PLAYING =================
     [Header("Game Playing")]
     [SerializeField] private float gamePlayingTimerMax = 120f;
     private float gamePlayingTimer;
 
+    // ================= LIFECYCLE =================
     private void Awake()
     {
         if (Instance != null)
@@ -38,13 +43,18 @@ public class KitchenGameManager : MonoBehaviour
         Instance = this;
         state = State.WaitingToStart;
 
-
-        ShowCursor(); 
-
+        ShowCursor();
     }
 
     private void Update()
     {
+        // ⏸ PAUSE → KHÔNG UPDATE TIMER
+        if (GamePauseManager.Instance != null &&
+            GamePauseManager.Instance.IsPaused())
+        {
+            return;
+        }
+
         switch (state)
         {
             case State.CountdownToStart:
@@ -57,6 +67,7 @@ public class KitchenGameManager : MonoBehaviour
         }
     }
 
+    // ================= HANDLERS =================
     private void HandleCountdown()
     {
         countdownToStartTimer -= Time.deltaTime;
@@ -80,6 +91,7 @@ public class KitchenGameManager : MonoBehaviour
         }
     }
 
+    // ================= STATE =================
     private void SetState(State newState)
     {
         state = newState;
@@ -87,12 +99,12 @@ public class KitchenGameManager : MonoBehaviour
         switch (state)
         {
             case State.WaitingToStart:
-                HideCursor(); 
+                HideCursor();
                 break;
 
             case State.CountdownToStart:
                 countdownToStartTimer = countdownToStartTimerMax;
-                HideCursor(); 
+                HideCursor();
                 break;
 
             case State.GamePlaying:
@@ -101,13 +113,12 @@ public class KitchenGameManager : MonoBehaviour
                 break;
 
             case State.GameOver:
-                ShowCursor(); 
+                ShowCursor();
                 break;
         }
 
         OnStateChanged?.Invoke(this, EventArgs.Empty);
     }
-
 
     // ================= CURSOR =================
     private void HideCursor()

@@ -3,7 +3,9 @@ using UnityEngine.UI;
 using UnityEngine.EventSystems;
 using System.Collections;
 
-public class HoverOutlineUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
+public class HoverOutlineUI : MonoBehaviour,
+    IPointerEnterHandler,
+    IPointerExitHandler
 {
     [Header("Outline Component")]
     [SerializeField] private Outline outline;
@@ -14,7 +16,6 @@ public class HoverOutlineUI : MonoBehaviour, IPointerEnterHandler, IPointerExitH
     [SerializeField] private float outlineMax = 5f;
 
     private Vector3 originalScale;
-    private float originalOutline;
 
     private void Awake()
     {
@@ -22,9 +23,9 @@ public class HoverOutlineUI : MonoBehaviour, IPointerEnterHandler, IPointerExitH
             outline = GetComponent<Outline>();
 
         originalScale = transform.localScale;
-        originalOutline = outline.effectDistance.x;
 
-        outline.effectDistance = new Vector2(0, 0);
+        // Bắt đầu không có outline
+        outline.effectDistance = Vector2.zero;
     }
 
     public void OnPointerEnter(PointerEventData eventData)
@@ -39,7 +40,6 @@ public class HoverOutlineUI : MonoBehaviour, IPointerEnterHandler, IPointerExitH
         StartCoroutine(HoverEffect(false));
     }
 
-
     private IEnumerator HoverEffect(bool isHover)
     {
         Vector3 targetScale = isHover ? originalScale * hoverScale : originalScale;
@@ -47,17 +47,23 @@ public class HoverOutlineUI : MonoBehaviour, IPointerEnterHandler, IPointerExitH
 
         while (true)
         {
-            transform.localScale = Vector3.Lerp(transform.localScale, targetScale, Time.deltaTime * animSpeed);
+            // ⚠️ QUAN TRỌNG: dùng unscaledDeltaTime cho UI khi Pause
+            float dt = Time.unscaledDeltaTime * animSpeed;
 
-            
-            float newOutline = Mathf.Lerp(outline.effectDistance.x, targetOutline, Time.deltaTime * animSpeed);
+            transform.localScale =
+                Vector3.Lerp(transform.localScale, targetScale, dt);
+
+            float newOutline =
+                Mathf.Lerp(outline.effectDistance.x, targetOutline, dt);
+
             outline.effectDistance = new Vector2(newOutline, newOutline);
 
             if (Vector3.Distance(transform.localScale, targetScale) < 0.001f &&
                 Mathf.Abs(outline.effectDistance.x - targetOutline) < 0.01f)
             {
                 transform.localScale = targetScale;
-                outline.effectDistance = new Vector2(targetOutline, targetOutline);
+                outline.effectDistance =
+                    new Vector2(targetOutline, targetOutline);
                 break;
             }
 
